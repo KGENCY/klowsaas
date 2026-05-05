@@ -140,7 +140,7 @@ export function ConsumerPreview({
                   {product.discountRate}%
                 </span>
               )}
-              {product.priceUSD > 0 ? (
+              {product.priceUSD > 0 && (
                 <>
                   <span className="text-[22px] font-bold tracking-tight">
                     {formatUSD(product.priceUSD)}
@@ -151,8 +151,6 @@ export function ConsumerPreview({
                     </span>
                   )}
                 </>
-              ) : (
-                <span className="text-sub/50 text-[14px]">가격을 설정해 주세요</span>
               )}
             </div>
           </ClickableSection>

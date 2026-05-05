@@ -50,6 +50,10 @@ const config: Config = {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.55" },
         },
+        "pulse-scale": {
+          "0%, 100%": { transform: "scale(1)" },
+          "50%": { transform: "scale(1.04)" },
+        },
       },
       animation: {
         "fade-in": "fade-in 0.35s ease-out",
@@ -57,6 +61,7 @@ const config: Config = {
         "slide-in-right": "slide-in-right 0.35s cubic-bezier(0.22, 1, 0.36, 1)",
         pop: "pop 0.25s cubic-bezier(0.22, 1, 0.36, 1)",
         "pulse-soft": "pulse-soft 1.5s ease-in-out infinite",
+        "pulse-scale": "pulse-scale 1.6s ease-in-out infinite",
       },
     },
   },

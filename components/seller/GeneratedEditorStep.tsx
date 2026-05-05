@@ -18,7 +18,6 @@ interface Props {
   onAddProduct: () => void;
   onUploadFile: (file: File) => void;
   onManualStart: () => void;
-  onCopyLink: () => void;
   rightPanel?: ReactNode;
 }
 
@@ -32,7 +31,6 @@ export function GeneratedEditorStep({
   onAddProduct,
   onUploadFile,
   onManualStart,
-  onCopyLink,
   rightPanel,
 }: Props) {
   const [activeProductId, setActiveProductId] = useState<string>("");
@@ -59,6 +57,11 @@ export function GeneratedEditorStep({
   }, [data.products, activeProductId]);
 
   const hasDraft = !!draftProductId;
+  const isFirstProductReady =
+    data.products.length === 1 &&
+    !hasDraft &&
+    mode === "grid" &&
+    addStage === "idle";
 
   return (
     <div className="pb-12">
@@ -83,7 +86,7 @@ export function GeneratedEditorStep({
                 </span>
                 <button
                   type="button"
-                  onClick={onCopyLink}
+                  onClick={() => setShareOpen(true)}
                   aria-label="링크 복사"
                   className="ml-auto w-7 h-7 -mr-1 rounded-lg flex items-center justify-center text-sub hover:text-ink hover:bg-bg transition-colors flex-shrink-0"
                 >
@@ -93,7 +96,9 @@ export function GeneratedEditorStep({
               <button
                 type="button"
                 onClick={() => setShareOpen(true)}
-                className="px-3 h-[40px] rounded-xl bg-ink text-white text-[12px] font-semibold whitespace-nowrap hover:opacity-90 transition-opacity flex-shrink-0"
+                className={`px-3 h-[40px] rounded-xl bg-ink text-white text-[12px] font-semibold whitespace-nowrap hover:opacity-90 transition-opacity flex-shrink-0 ${
+                  isFirstProductReady ? "animate-pulse-scale" : ""
+                }`}
               >
                 글로벌 판매시작
               </button>

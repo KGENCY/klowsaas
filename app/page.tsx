@@ -185,17 +185,6 @@ export default function Page() {
     closeEdit();
   };
 
-  const copyLink = async () => {
-    try {
-      if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(data.link);
-      }
-    } catch {
-      /* mock */
-    }
-    showToast("링크가 복사됐어요 · 이제 어디든 붙여넣어 글로벌 판매 시작!");
-  };
-
   const editingProduct = useMemo(
     () =>
       edit.productId
@@ -231,7 +220,6 @@ export default function Page() {
           onAddProduct={handleAddProduct}
           onUploadFile={startDraftWithFile}
           onManualStart={startDraftManual}
-          onCopyLink={copyLink}
           rightPanel={
             addPanelOpen ? (
               <AddProductPanel
