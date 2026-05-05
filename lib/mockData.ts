@@ -51,13 +51,13 @@ export function createBlankProduct(brandName: string, id?: string): Product {
 }
 
 export const goodForOptions = [
-  "Dry",
-  "Oily",
-  "Combination",
-  "Sensitive",
+  "Dry Skin",
+  "Oily Skin",
+  "Combination Skin",
+  "Sensitive Skin",
+  "Acne Skin",
   "Anti-aging",
   "Glass skin",
-  "Acne",
   "Dullness",
   "Redness",
   "Pores",
@@ -102,21 +102,21 @@ export function mockAutofillFromFile(
       imageType: "rice",
       benefits: ["Glass skin", "Hydration", "Brightening"],
       ingredients: ["Niacinamide", "Hyaluronic Acid", "Rice Extract"],
-      goodFor: ["Dry", "Glass skin", "Dullness"],
+      goodFor: ["Dry Skin", "Glass skin", "Dullness"],
     },
     {
       name: "Cica Calm Soothing Cream",
       imageType: "green-tea",
       benefits: ["Soothing", "Barrier care", "Hydration"],
       ingredients: ["Cica", "Panthenol", "Ceramide"],
-      goodFor: ["Sensitive", "Redness", "Dry"],
+      goodFor: ["Sensitive Skin", "Redness", "Dry Skin"],
     },
     {
       name: "Cucumber Cooling Toner",
       imageType: "cucumber",
       benefits: ["Cooling", "Hydration", "Soothing"],
       ingredients: ["Cucumber Extract", "Hyaluronic Acid", "Aloe"],
-      goodFor: ["Oily", "Combination", "Pores"],
+      goodFor: ["Oily Skin", "Combination Skin", "Pores"],
     },
   ];
   const seed = fileName.length % presets.length;

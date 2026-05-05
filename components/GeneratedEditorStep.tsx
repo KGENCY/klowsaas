@@ -6,6 +6,7 @@ import type { EditFocus, ProductData } from "@/types";
 import { ConsumerPreview } from "./ConsumerPreview";
 import { GridStorefront } from "./GridStorefront";
 import { MockupUploadStage } from "./MockupUploadStage";
+import { ShareModal } from "./ShareModal";
 
 type AddStage = "idle" | "upload" | "analyzing";
 
@@ -36,6 +37,7 @@ export function GeneratedEditorStep({
 }: Props) {
   const [activeProductId, setActiveProductId] = useState<string>("");
   const [mode, setMode] = useState<ViewMode>("grid");
+  const [shareOpen, setShareOpen] = useState(false);
 
   useEffect(() => {
     if (addStage !== "idle") {
@@ -90,7 +92,7 @@ export function GeneratedEditorStep({
               </div>
               <button
                 type="button"
-                onClick={onCopyLink}
+                onClick={() => setShareOpen(true)}
                 className="px-3 h-[40px] rounded-xl bg-ink text-white text-[12px] font-semibold whitespace-nowrap hover:opacity-90 transition-opacity flex-shrink-0"
               >
                 글로벌 판매시작
@@ -140,6 +142,12 @@ export function GeneratedEditorStep({
           </div>
         </div>
       </div>
+
+      <ShareModal
+        open={shareOpen}
+        link={data.link}
+        onClose={() => setShareOpen(false)}
+      />
     </div>
   );
 }

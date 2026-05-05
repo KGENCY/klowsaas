@@ -124,18 +124,47 @@ export function ConsumerPreview({
         </div>
       )}
 
-      {/* Hero image — edge to edge, fills the phone width */}
+      {/* Hero image — edge to edge, fills the phone width.
+          When more than 3 photos exist, hero turns into a horizontal swipe
+          carousel of the EXTRA photos (4th onward). The first 3 stay in the
+          bottom vertical strip. */}
       <ClickableSection
         editable={editable}
         focus="image"
         onEdit={(f) => onEdit(product.id, f)}
       >
         <div className="w-full overflow-hidden" style={{ aspectRatio: "1 / 1" }}>
-          <ProductVisual
-            type={product.imageType}
-            size="lg"
-            brandName={product.brand || brandName}
-          />
+          {product.photos.length > 3 ? (
+            <div className="w-full h-full flex overflow-x-auto snap-x snap-mandatory scrollbar-hide">
+              {product.photos.slice(3).map((p, i) => (
+                <div
+                  key={`hero-${p}-${i}`}
+                  className="snap-center flex-shrink-0 w-full h-full"
+                >
+                  {isImageUrl(p) ? (
+                    <img
+                      src={p}
+                      alt=""
+                      className="w-full h-full object-cover"
+                      draggable={false}
+                    />
+                  ) : (
+                    <ProductVisual
+                      type={product.imageType}
+                      size="lg"
+                      brandName={product.brand || brandName}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <ProductVisual
+              type={product.imageType}
+              size="lg"
+              brandName={product.brand || brandName}
+            />
+          )}
         </div>
       </ClickableSection>
 
@@ -195,23 +224,33 @@ export function ConsumerPreview({
         </div>
       </div>
 
-      {/* Photo strip — 2 visible, horizontal scroll for the rest */}
+      {/* Photo strip — first 3 photos, stacked vertically, one large per row.
+          Photos 4+ scroll horizontally inside the hero above. */}
       {product.photos.length > 0 && (
-        <div className="px-5 mt-3">
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide snap-x snap-mandatory">
-            {product.photos.map((p, i) => (
-              <div
-                key={`${p}-${i}`}
-                className="snap-start flex-shrink-0 rounded-2xl bg-bg border border-line overflow-hidden flex flex-col items-center justify-center"
-                style={{ width: "calc((100% - 8px) / 2)", aspectRatio: "1 / 1" }}
-              >
-                <ImagePlus className="w-5 h-5 text-sub/60" />
-                <span className="mt-1 px-2 text-[9.5px] text-sub text-center truncate max-w-full">
-                  {p.replace(/\.[^.]+$/, "")}
-                </span>
-              </div>
-            ))}
-          </div>
+        <div className="px-5 mt-3 flex flex-col gap-2">
+          {product.photos.slice(0, 3).map((p, i) => (
+            <div
+              key={`${p}-${i}`}
+              className="w-full rounded-2xl bg-bg border border-line overflow-hidden flex flex-col items-center justify-center"
+              style={{ aspectRatio: "1 / 1" }}
+            >
+              {isImageUrl(p) ? (
+                <img
+                  src={p}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  draggable={false}
+                />
+              ) : (
+                <>
+                  <ImagePlus className="w-5 h-5 text-sub/60" />
+                  <span className="mt-1 px-2 text-[10px] text-sub text-center truncate max-w-full">
+                    {p.replace(/\.[^.]+$/, "")}
+                  </span>
+                </>
+              )}
+            </div>
+          ))}
         </div>
       )}
 
@@ -271,13 +310,13 @@ export function ConsumerPreview({
         </SectionBlock>
       </ClickableSection>
 
-      {/* Good for — skin types & concerns */}
+      {/* Skin match — skin types & concerns */}
       <ClickableSection
         editable={editable}
         focus="goodFor"
         onEdit={(f) => onEdit(product.id, f)}
       >
-        <SectionBlock title="Good for">
+        <SectionBlock title="Skin match">
           {product.goodFor.length > 0 ? (
             <div className="flex flex-wrap gap-1.5">
               {product.goodFor.map((g) => (
@@ -291,7 +330,7 @@ export function ConsumerPreview({
             </div>
           ) : (
             <span className="text-[12px] text-sub/60">
-              예: Dry, Sensitive, Glass skin
+              예: Dry Skin, Sensitive Skin, Glass skin
             </span>
           )}
         </SectionBlock>
@@ -405,5 +444,15 @@ function SectionBlock({
 
 function Divider() {
   return <div className="my-1 border-t border-line/70" />;
+}
+
+function isImageUrl(value: string) {
+  return (
+    value.startsWith("blob:") ||
+    value.startsWith("data:") ||
+    value.startsWith("http://") ||
+    value.startsWith("https://") ||
+    value.startsWith("/")
+  );
 }
 

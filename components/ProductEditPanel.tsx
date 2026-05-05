@@ -40,7 +40,7 @@ const sectionTitles: Record<EditFocus, string> = {
   name: "상품명",
   benefits: "Main benefits",
   ingredients: "Key ingredients",
-  goodFor: "Good for",
+  goodFor: "Skin Match",
   price: "가격",
 };
 

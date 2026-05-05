@@ -113,10 +113,16 @@ export function AddProductPanel({
   const onPickPhoto = () => photoInputRef.current?.click();
 
   const addPhoto = (file: File) => {
-    update({ photos: [...product.photos, file.name] });
+    const url = URL.createObjectURL(file);
+    update({ photos: [...product.photos, url] });
   };
-  const removePhoto = (name: string) => {
-    update({ photos: product.photos.filter((n) => n !== name) });
+  const removePhoto = (url: string) => {
+    update({ photos: product.photos.filter((p) => p !== url) });
+    if (url.startsWith("blob:")) {
+      try {
+        URL.revokeObjectURL(url);
+      } catch {}
+    }
   };
 
   const handleFile = (file: File) => {
@@ -485,11 +491,11 @@ function InfoStep({
           />
         </Block>
 
-        <Block label="GOOD FOR">
+        <Block label="SKIN MATCH">
           <EditablePillRow
             items={product.goodFor}
             variant="outline"
-            placeholder="추가 (예: Dry)"
+            placeholder="추가 (예: Dry Skin)"
             max={6}
             onChange={(goodFor) => onUpdate({ goodFor })}
           />
@@ -512,30 +518,44 @@ function PhotoRow({
 }: {
   photos: string[];
   onPick: () => void;
-  onRemove: (name: string) => void;
+  onRemove: (url: string) => void;
   max: number;
 }) {
   return (
     <div className="flex items-center gap-2.5 overflow-x-auto scrollbar-hide pb-1">
-      {photos.map((name) => (
-        <div
-          key={name}
-          className="relative w-[108px] h-[108px] flex-shrink-0 rounded-2xl bg-bg border border-line overflow-hidden flex items-center justify-center"
-        >
-          <ImagePlus className="w-6 h-6 text-sub/60" />
-          <span className="absolute bottom-1.5 left-1.5 right-1.5 text-[10.5px] text-center font-medium text-sub truncate">
-            {name.replace(/\.[^.]+$/, "")}
-          </span>
-          <button
-            type="button"
-            onClick={() => onRemove(name)}
-            aria-label={`${name} 삭제`}
-            className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-ink text-white flex items-center justify-center hover:opacity-90 transition-opacity"
+      {photos.map((url, i) => {
+        const isImage = url.startsWith("blob:") || url.startsWith("http") || url.startsWith("data:");
+        return (
+          <div
+            key={`${url}-${i}`}
+            className="relative w-[108px] h-[108px] flex-shrink-0 rounded-2xl bg-bg border border-line overflow-hidden flex items-center justify-center"
           >
-            <X className="w-3 h-3" strokeWidth={2.8} />
-          </button>
-        </div>
-      ))}
+            {isImage ? (
+              <img
+                src={url}
+                alt=""
+                className="w-full h-full object-cover"
+                draggable={false}
+              />
+            ) : (
+              <>
+                <ImagePlus className="w-6 h-6 text-sub/60" />
+                <span className="absolute bottom-1.5 left-1.5 right-1.5 text-[10.5px] text-center font-medium text-sub truncate">
+                  {url.replace(/\.[^.]+$/, "")}
+                </span>
+              </>
+            )}
+            <button
+              type="button"
+              onClick={() => onRemove(url)}
+              aria-label="사진 삭제"
+              className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-ink text-white flex items-center justify-center hover:opacity-90 transition-opacity"
+            >
+              <X className="w-3 h-3" strokeWidth={2.8} />
+            </button>
+          </div>
+        );
+      })}
       {photos.length < max && (
         <button
           type="button"

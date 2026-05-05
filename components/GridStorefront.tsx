@@ -203,7 +203,7 @@ function AddCell({
             <Plus className="w-4 h-4" strokeWidth={primary ? 2.5 : 2} />
           </div>
           {primary && (
-            <div className="text-[11px] font-semibold text-ink">
+            <div className="text-[12.5px] font-semibold text-ink">
               상품 추가
             </div>
           )}
