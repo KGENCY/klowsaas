@@ -56,6 +56,7 @@ export function GridStorefront({
                 primary={primary}
                 onClick={onAddProduct}
                 noPadding={noProducts}
+                pulse={noProducts && primary}
               />
             );
           })}
@@ -117,10 +118,12 @@ function AddCell({
   onClick,
   primary,
   noPadding,
+  pulse,
 }: {
   onClick: () => void;
   primary?: boolean;
   noPadding?: boolean;
+  pulse?: boolean;
 }) {
   return (
     <div>
@@ -130,7 +133,7 @@ function AddCell({
           primary
             ? "border-[2.5px] border-dashed border-ink bg-bg hover:bg-line/40"
             : "border-2 border-dashed border-line bg-bg/60 hover:border-ink/40 hover:bg-line/40"
-        }`}
+        } ${pulse ? "animate-pulse-scale" : ""}`}
       >
         <div className="relative z-10 flex flex-col items-center gap-1.5">
           <div

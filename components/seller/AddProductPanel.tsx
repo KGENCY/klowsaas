@@ -530,7 +530,7 @@ function PhotoRow({
 }) {
   const isFirstUpload = photos.length === 0;
   return (
-    <div className="flex items-center gap-2.5 overflow-x-auto scrollbar-hide pb-1">
+    <div className="flex items-center gap-2.5 overflow-x-auto scrollbar-hide pt-2 pb-2">
       {hasExtracted && (
         <div className="relative w-[108px] h-[108px] flex-shrink-0 rounded-2xl bg-bg border border-line overflow-hidden">
           <ProductVisual size="sm" brandName={brand} />
