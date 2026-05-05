@@ -88,8 +88,9 @@ export function ConsumerPreview({
           </div>
         </div>
 
-      {/* Product switcher (only when there's more than one) */}
-      {products.length > 1 && (
+      {/* Product switcher — hidden during a draft to keep focus on the
+          single product being edited. */}
+      {products.length > 1 && !isDraft && (
         <div className="px-5 pt-3 pb-2 flex items-center gap-2 overflow-x-auto scrollbar-hide">
           {products.map((p) => {
             const active = p.id === activeProductId;
@@ -122,31 +123,22 @@ export function ConsumerPreview({
         </div>
       )}
 
-      {/* Hero image */}
+      {/* Hero image — edge to edge, fills the phone width */}
       <ClickableSection
         editable={editable}
         focus="image"
         onEdit={(f) => onEdit(product.id, f)}
       >
-        <div className="px-4 pt-3 flex justify-center">
-          <div
-            className="w-full rounded-[22px] overflow-hidden"
-            style={{ aspectRatio: "1 / 1", maxHeight: 260 }}
-          >
-            <ProductVisual
-              type={product.imageType}
-              size="lg"
-              brandName={product.brand || brandName}
-            />
-          </div>
+        <div className="w-full overflow-hidden" style={{ aspectRatio: "1 / 1" }}>
+          <ProductVisual
+            type={product.imageType}
+            size="lg"
+            brandName={product.brand || brandName}
+          />
         </div>
       </ClickableSection>
 
       <div className="px-5 pt-3">
-        <div className="text-[10.5px] uppercase tracking-[0.18em] text-sub font-semibold">
-          {product.brand || brandName} · {category}
-        </div>
-
         {/* Name */}
         <ClickableSection
           editable={editable}

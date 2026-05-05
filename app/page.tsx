@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Globe2, Copy } from "lucide-react";
 import type {
   EditFocus,
   EditState,
@@ -9,7 +10,11 @@ import type {
   StepKey,
   ToastState,
 } from "@/types";
-import { createBlankProduct, defaultProductData } from "@/lib/mockData";
+import {
+  createBlankProduct,
+  defaultProductData,
+  mockAutofillFromFile,
+} from "@/lib/mockData";
 import { saveBrand } from "@/lib/brandStore";
 import { sanitizeSlug } from "@/lib/pricing";
 
@@ -21,10 +26,15 @@ import { PageEditPanel } from "@/components/PageEditPanel";
 import { AddProductPanel } from "@/components/AddProductPanel";
 import { Toast } from "@/components/Toast";
 
+type AddStage = "idle" | "upload" | "analyzing";
+type AddEntry = "file" | "manual";
+
 export default function Page() {
   const [step, setStep] = useState<StepKey>("link");
   const [data, setData] = useState<ProductData>(defaultProductData);
   const [draftProductId, setDraftProductId] = useState<string | null>(null);
+  const [addStage, setAddStage] = useState<AddStage>("idle");
+  const [addEntry, setAddEntry] = useState<AddEntry>("file");
   const [edit, setEdit] = useState<EditState>({
     isOpen: false,
     scope: null,
@@ -36,6 +46,7 @@ export default function Page() {
     message: "",
   });
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const analysisTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showToast = useCallback((message: string) => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -69,9 +80,57 @@ export default function Page() {
   };
 
   const handleAddProduct = () => {
+    // Stay on the phone mockup; show the in-mockup upload UI first.
+    if (analysisTimer.current) {
+      clearTimeout(analysisTimer.current);
+      analysisTimer.current = null;
+    }
+    setAddStage("upload");
+  };
+
+  const cancelAddStage = () => {
+    if (analysisTimer.current) {
+      clearTimeout(analysisTimer.current);
+      analysisTimer.current = null;
+    }
+    setAddStage("idle");
+  };
+
+  const startDraftWithFile = (file: File) => {
+    setAddStage("analyzing");
+    if (analysisTimer.current) clearTimeout(analysisTimer.current);
+    analysisTimer.current = setTimeout(() => {
+      const blank = createBlankProduct(data.brandName);
+      const filled = mockAutofillFromFile(file.name, data.brandName);
+      const product: Product = {
+        ...blank,
+        ...filled,
+        detailFileName: file.name,
+      };
+      setData((d) => ({ ...d, products: [...d.products, product] }));
+      setDraftProductId(product.id);
+      setAddEntry("file");
+      setAddStage("idle");
+      setEdit({
+        isOpen: true,
+        scope: "add",
+        productId: product.id,
+        focus: null,
+      });
+      analysisTimer.current = null;
+    }, 1300);
+  };
+
+  const startDraftManual = () => {
+    if (analysisTimer.current) {
+      clearTimeout(analysisTimer.current);
+      analysisTimer.current = null;
+    }
     const blank = createBlankProduct(data.brandName);
     setData((d) => ({ ...d, products: [...d.products, blank] }));
     setDraftProductId(blank.id);
+    setAddEntry("manual");
+    setAddStage("idle");
     setEdit({
       isOpen: true,
       scope: "add",
@@ -164,9 +223,34 @@ export default function Page() {
 
   const addPanelOpen = edit.isOpen && edit.scope === "add";
 
+  const headerLinkBar =
+    step === "editor" ? (
+      <div className="flex items-center gap-2 w-full">
+        <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl bg-white border border-line min-w-0">
+          <Globe2 className="w-3.5 h-3.5 text-ink flex-shrink-0" />
+          <span className="text-[13px] font-medium text-ink truncate">
+            {data.link}
+          </span>
+        </div>
+        <button
+          onClick={copyLink}
+          className="px-3 h-[38px] rounded-xl bg-white border border-line text-ink text-[12.5px] font-semibold flex items-center gap-1.5 hover:border-ink/30 transition-colors flex-shrink-0"
+        >
+          <Copy className="w-3.5 h-3.5" />
+          <span className="hidden md:inline">복사</span>
+        </button>
+        <button
+          onClick={copyLink}
+          className="px-3.5 h-[38px] rounded-xl bg-ink text-white text-[12.5px] font-semibold hover:opacity-90 transition-opacity flex-shrink-0 whitespace-nowrap"
+        >
+          판매 시작
+        </button>
+      </div>
+    ) : null;
+
   return (
     <main className="min-h-screen bg-bg">
-      <Header onLogoClick={goLink} />
+      <Header onLogoClick={goLink} centerSlot={headerLinkBar} />
 
       {step === "link" && (
         <LinkCreateStep initialSlug={data.slug} onSubmit={handleLinkSubmit} />
@@ -176,17 +260,20 @@ export default function Page() {
         <GeneratedEditorStep
           data={data}
           draftProductId={draftProductId}
+          addStage={addStage}
           onEditProduct={openProductEdit}
-          onEditPage={openPageEdit}
-          onCopy={copyLink}
-          onPublish={copyLink}
           onAddProduct={handleAddProduct}
+          onUploadFile={startDraftWithFile}
+          onManualStart={startDraftManual}
+          onCancelAddStage={cancelAddStage}
           rightPanel={
             addPanelOpen ? (
               <AddProductPanel
                 open={addPanelOpen}
                 product={draftProduct}
                 data={data}
+                initialTab={addEntry}
+                initialStep="info"
                 onChange={liveProductChange}
                 onConfirm={confirmDraft}
                 onCancel={cancelDraft}

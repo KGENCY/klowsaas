@@ -21,6 +21,7 @@ import {
   formatUSD,
   parseKRWInput,
 } from "@/lib/pricing";
+import { mockAutofillFromFile } from "@/lib/mockData";
 
 type Tab = "file" | "manual";
 type Step = "upload" | "info" | "price" | "review";
@@ -29,6 +30,8 @@ interface Props {
   open: boolean;
   product: Product | null;
   data: ProductData;
+  initialTab?: Tab;
+  initialStep?: Step;
   onChange: (productId: string, next: Product) => void;
   onConfirm: () => void;
   onCancel: () => void;
@@ -38,12 +41,16 @@ export function AddProductPanel({
   open,
   product,
   data,
+  initialTab,
+  initialStep,
   onChange,
   onConfirm,
   onCancel,
 }: Props) {
-  const [tab, setTab] = useState<Tab>("file");
-  const [step, setStep] = useState<Step>("upload");
+  const [tab, setTab] = useState<Tab>(initialTab ?? "file");
+  const [step, setStep] = useState<Step>(
+    initialStep ?? (initialTab === "manual" ? "info" : "upload")
+  );
   const [autoFilling, setAutoFilling] = useState(false);
   const [settlementRaw, setSettlementRaw] = useState("");
   const [reviewLoading, setReviewLoading] = useState(false);
@@ -54,13 +61,16 @@ export function AddProductPanel({
 
   useEffect(() => {
     if (open) {
-      setTab("file");
-      setStep("upload");
+      const t = initialTab ?? "file";
+      const s = initialStep ?? (t === "manual" ? "info" : "upload");
+      setTab(t);
+      setStep(s);
       setSettlementRaw("");
       setAutoFilling(false);
       setReviewLoading(false);
       setPhotos([]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   const switchTab = (next: Tab) => {
@@ -938,30 +948,3 @@ function Pill({ children }: { children: React.ReactNode }) {
   );
 }
 
-function mockAutofillFromFile(
-  fileName: string,
-  brand: string
-): Partial<Product> {
-  const presets: Partial<Product>[] = [
-    {
-      name: "Glass Glow Daily Serum",
-      imageType: "rice",
-      benefits: ["Glass skin", "Hydration", "Brightening"],
-      ingredients: ["Niacinamide", "Hyaluronic Acid", "Rice Extract"],
-    },
-    {
-      name: "Cica Calm Soothing Cream",
-      imageType: "green-tea",
-      benefits: ["Soothing", "Barrier care", "Hydration"],
-      ingredients: ["Cica", "Panthenol", "Ceramide"],
-    },
-    {
-      name: "Cucumber Cooling Toner",
-      imageType: "cucumber",
-      benefits: ["Cooling", "Hydration", "Soothing"],
-      ingredients: ["Cucumber Extract", "Hyaluronic Acid", "Aloe"],
-    },
-  ];
-  const seed = fileName.length % presets.length;
-  return { ...presets[seed], brand };
-}

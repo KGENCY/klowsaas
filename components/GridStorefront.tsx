@@ -29,17 +29,21 @@ export function GridStorefront({
 
   return (
     <div
-      className="relative mx-auto w-full max-w-[380px] rounded-[48px] bg-ink shadow-pop"
-      style={{ padding: 10 }}
+      className="relative mx-auto w-full max-w-[380px] rounded-[48px] bg-ink shadow-pop flex flex-col"
+      style={{
+        padding: 10,
+        aspectRatio: "9 / 19.2",
+        maxHeight: "calc(100vh - 140px)",
+      }}
     >
       <span className="absolute left-[-2px] top-[110px] w-[3px] h-[36px] rounded-r bg-ink/80" aria-hidden />
       <span className="absolute left-[-2px] top-[160px] w-[3px] h-[60px] rounded-r bg-ink/80" aria-hidden />
       <span className="absolute left-[-2px] top-[230px] w-[3px] h-[60px] rounded-r bg-ink/80" aria-hidden />
       <span className="absolute right-[-2px] top-[180px] w-[3px] h-[80px] rounded-l bg-ink/80" aria-hidden />
 
-      <div className="relative bg-white rounded-[38px] overflow-hidden">
+      <div className="relative flex flex-col flex-1 min-h-0 bg-white rounded-[38px] overflow-hidden">
         {/* Status bar */}
-        <div className="relative flex items-center justify-between px-7 pt-2.5 pb-1 text-[11px] font-semibold text-ink">
+        <div className="relative flex items-center justify-between px-7 pt-2.5 pb-1 text-[11px] font-semibold text-ink flex-shrink-0">
           <span className="tracking-tight">9:41</span>
           <span className="absolute left-1/2 top-2 -translate-x-1/2 w-[88px] h-[26px] rounded-full bg-ink" aria-hidden />
           <span className="flex items-center gap-1 text-[10px]">
@@ -56,7 +60,7 @@ export function GridStorefront({
           </span>
         </div>
 
-      <div className="px-5 pt-3 pb-2.5 flex items-center justify-between border-b border-line/60">
+      <div className="px-5 pt-3 pb-2.5 flex items-center justify-between border-b border-line/60 flex-shrink-0">
         <button className="w-8 h-8 -ml-1 flex items-center justify-center">
           <Menu className="w-[17px] h-[17px] text-ink" />
         </button>
@@ -71,6 +75,7 @@ export function GridStorefront({
         </div>
       </div>
 
+      <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
       <div className="px-5 py-3 flex gap-2 overflow-x-auto scrollbar-hide">
         <Pill active>All</Pill>
         <Pill>{category}</Pill>
@@ -108,6 +113,7 @@ export function GridStorefront({
             />
           );
         })}
+      </div>
       </div>
       </div>
     </div>

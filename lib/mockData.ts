@@ -76,3 +76,31 @@ export const ingredientOptions = [
   "Green Tea",
   "Cucumber Extract",
 ];
+
+export function mockAutofillFromFile(
+  fileName: string,
+  brand: string
+): Partial<Product> {
+  const presets: Partial<Product>[] = [
+    {
+      name: "Glass Glow Daily Serum",
+      imageType: "rice",
+      benefits: ["Glass skin", "Hydration", "Brightening"],
+      ingredients: ["Niacinamide", "Hyaluronic Acid", "Rice Extract"],
+    },
+    {
+      name: "Cica Calm Soothing Cream",
+      imageType: "green-tea",
+      benefits: ["Soothing", "Barrier care", "Hydration"],
+      ingredients: ["Cica", "Panthenol", "Ceramide"],
+    },
+    {
+      name: "Cucumber Cooling Toner",
+      imageType: "cucumber",
+      benefits: ["Cooling", "Hydration", "Soothing"],
+      ingredients: ["Cucumber Extract", "Hyaluronic Acid", "Aloe"],
+    },
+  ];
+  const seed = fileName.length % presets.length;
+  return { ...presets[seed], brand };
+}
