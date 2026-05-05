@@ -81,9 +81,9 @@ export function ConsumerPreview({
           </div>
         )}
 
-        {/* Hero: 4+ photos become a horizontal swipe carousel; 0–3 use the
-            shared product visual. The first 3 photos (when present) appear in
-            the vertical strip below. */}
+        {/* Hero: the extracted main visual is always slide 1. User-added
+            photos beyond the 3-thumbnail strip (index 3+) become additional
+            carousel slides reachable by swiping sideways. */}
         <ClickableSection
           editable={editable}
           focus="image"
@@ -92,6 +92,9 @@ export function ConsumerPreview({
           <div className="w-full overflow-hidden" style={{ aspectRatio: "1 / 1" }}>
             {product.photos.length > 3 ? (
               <div className="w-full h-full flex overflow-x-auto snap-x snap-mandatory scrollbar-hide">
+                <div className="snap-center flex-shrink-0 w-full h-full">
+                  <ProductVisual size="lg" brandName={product.brand || brandName} />
+                </div>
                 {product.photos.slice(3).map((p, i) => (
                   <div
                     key={`hero-${p}-${i}`}

@@ -28,7 +28,7 @@ export function findProductBySlug(
 
 export function saveBrand(data: ProductData): void {
   if (typeof window === "undefined") return;
-  if (!data.slug || data.slug.length < 3) return;
+  if (!data.slug) return;
   try {
     window.localStorage.setItem(STORAGE_KEY(data.slug), JSON.stringify(data));
     const idx = readIndex();

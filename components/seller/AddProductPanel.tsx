@@ -22,6 +22,7 @@ import {
   parseKRWInput,
 } from "@/lib/pricing";
 import { goodForOptions, mockAutofillFromFile } from "@/lib/mockData";
+import { ProductVisual } from "@/components/ui/ProductVisual";
 
 type Tab = "file" | "manual";
 type Step = "upload" | "info" | "price" | "review";
@@ -456,6 +457,8 @@ function InfoStep({
         <Block label="대표 사진">
           <PhotoRow
             photos={product.photos}
+            hasExtracted={!!product.detailFileName}
+            brand={product.brand}
             onPick={onPickPhoto}
             onRemove={onRemovePhoto}
             max={6}
@@ -512,17 +515,30 @@ function InfoStep({
 
 function PhotoRow({
   photos,
+  hasExtracted,
+  brand,
   onPick,
   onRemove,
   max,
 }: {
   photos: string[];
+  hasExtracted: boolean;
+  brand: string;
   onPick: () => void;
   onRemove: (url: string) => void;
   max: number;
 }) {
+  const isFirstUpload = photos.length === 0;
   return (
     <div className="flex items-center gap-2.5 overflow-x-auto scrollbar-hide pb-1">
+      {hasExtracted && (
+        <div className="relative w-[108px] h-[108px] flex-shrink-0 rounded-2xl bg-bg border border-line overflow-hidden">
+          <ProductVisual size="sm" brandName={brand} />
+          <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-full bg-ink text-white text-[9.5px] font-bold tracking-wide">
+            메인
+          </span>
+        </div>
+      )}
       {photos.map((url, i) => {
         const isImage = url.startsWith("blob:") || url.startsWith("http") || url.startsWith("data:");
         return (
@@ -560,7 +576,11 @@ function PhotoRow({
         <button
           type="button"
           onClick={onPick}
-          className="w-[108px] h-[108px] flex-shrink-0 rounded-2xl border-2 border-dashed border-line bg-white hover:border-ink/40 hover:bg-bg/60 transition-colors flex flex-col items-center justify-center gap-1.5 text-sub hover:text-ink"
+          className={`w-[108px] h-[108px] flex-shrink-0 rounded-2xl border-2 border-dashed bg-white transition-colors flex flex-col items-center justify-center gap-1.5 ${
+            isFirstUpload
+              ? "animate-pulse-scale border-ink/60 text-ink"
+              : "border-line text-sub hover:border-ink/40 hover:bg-bg/60 hover:text-ink"
+          }`}
         >
           <Plus className="w-6 h-6" />
           <span className="text-[11.5px] font-semibold">사진 추가</span>
@@ -729,7 +749,7 @@ function PriceStep({
         <div className="mt-3 pt-3 border-t border-white/10 grid grid-cols-3 gap-1.5 text-[10.5px] opacity-75">
           <Pill>환율 ₩{exchangeRate.toLocaleString("ko-KR")}</Pill>
           <Pill>고정배송 ${shippingUSD}</Pill>
-          <Pill>결제수수료 {Math.round(paymentFeeRate * 100)}%</Pill>
+          <Pill>해외결제 수수료 {Math.round(paymentFeeRate * 100)}%</Pill>
         </div>
       </div>
     </div>

@@ -123,7 +123,7 @@ function UploadView({
       <h2 className="text-[19px] font-bold leading-[1.3] tracking-tight text-ink">
         {heading} 제품의
         <br />
-        상세페이지 한 장만 올려주세요
+        상세페이지 파일만 올려주세요!
       </h2>
       <p className="mt-2 text-[12px] text-sub leading-[1.55]">
         번역·결제·해외배송은 KLOW가 도와드릴게요.

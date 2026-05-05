@@ -120,5 +120,5 @@ export function mockAutofillFromFile(
     },
   ];
   const seed = fileName.length % presets.length;
-  return { ...presets[seed], brand, photos: [fileName] };
+  return { ...presets[seed], brand, photos: [] };
 }

@@ -13,7 +13,7 @@ export function LinkCreateStep({ initialSlug, onSubmit }: Props) {
   const [raw, setRaw] = useState(initialSlug);
 
   const slug = useMemo(() => sanitizeSlug(raw), [raw]);
-  const isValid = slug.length >= 3;
+  const isValid = slug.length >= 1;
 
   const submit = () => {
     if (!isValid) return;
