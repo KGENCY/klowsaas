@@ -1,0 +1,230 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type {
+  EditFocus,
+  EditState,
+  Product,
+  ProductData,
+  StepKey,
+  ToastState,
+} from "@/types";
+import { createBlankProduct, defaultProductData } from "@/lib/mockData";
+import { saveBrand } from "@/lib/brandStore";
+import { sanitizeSlug } from "@/lib/pricing";
+
+import { Header } from "@/components/Header";
+import { LinkCreateStep } from "@/components/LinkCreateStep";
+import { GeneratedEditorStep } from "@/components/GeneratedEditorStep";
+import { ProductEditPanel } from "@/components/ProductEditPanel";
+import { PageEditPanel } from "@/components/PageEditPanel";
+import { AddProductPanel } from "@/components/AddProductPanel";
+import { Toast } from "@/components/Toast";
+
+export default function Page() {
+  const [step, setStep] = useState<StepKey>("link");
+  const [data, setData] = useState<ProductData>(defaultProductData);
+  const [draftProductId, setDraftProductId] = useState<string | null>(null);
+  const [edit, setEdit] = useState<EditState>({
+    isOpen: false,
+    scope: null,
+    productId: null,
+    focus: null,
+  });
+  const [toast, setToast] = useState<ToastState>({
+    isVisible: false,
+    message: "",
+  });
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showToast = useCallback((message: string) => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setToast({ isVisible: true, message });
+    toastTimer.current = setTimeout(() => {
+      setToast({ isVisible: false, message: "" });
+    }, 2200);
+  }, []);
+
+  // Mirror seller-edited data to localStorage so the consumer link
+  // (/brand/{slug}) shows the brand's actual products, keywords, prices.
+  useEffect(() => {
+    saveBrand(data);
+  }, [data]);
+
+  const goLink = () => {
+    setStep("link");
+    setDraftProductId(null);
+  };
+
+  const handleLinkSubmit = (slug: string) => {
+    const safe = sanitizeSlug(slug);
+    setData((d) => ({
+      ...d,
+      slug: safe,
+      brandName: deriveBrandName(safe),
+      link: `klow.kr/${safe}`,
+      products: [],
+    }));
+    setStep("editor");
+  };
+
+  const handleAddProduct = () => {
+    const blank = createBlankProduct(data.brandName);
+    setData((d) => ({ ...d, products: [...d.products, blank] }));
+    setDraftProductId(blank.id);
+    setEdit({
+      isOpen: true,
+      scope: "add",
+      productId: blank.id,
+      focus: null,
+    });
+  };
+
+  const cancelDraft = () => {
+    if (draftProductId) {
+      setData((d) => ({
+        ...d,
+        products: d.products.filter((p) => p.id !== draftProductId),
+      }));
+    }
+    setDraftProductId(null);
+    closeEdit();
+  };
+
+  const confirmDraft = () => {
+    setDraftProductId(null);
+    closeEdit();
+    // Per UX: don't show "added" toast or detail page — return to home with
+    // mockup reflecting the new product so the user can add another.
+  };
+
+  const openProductEdit = (productId: string, focus: EditFocus) => {
+    setEdit({ isOpen: true, scope: "product", productId, focus });
+  };
+  const openPageEdit = () => {
+    setEdit({ isOpen: true, scope: "page", productId: null, focus: null });
+  };
+  const closeEdit = () =>
+    setEdit({ isOpen: false, scope: null, productId: null, focus: null });
+
+  const liveProductChange = (productId: string, next: Product) => {
+    setData((d) => ({
+      ...d,
+      products: d.products.map((p) => (p.id === productId ? next : p)),
+    }));
+  };
+
+  const applyProduct = (productId: string, next: Product) => {
+    liveProductChange(productId, next);
+    showToast("수정사항이 반영되었습니다");
+    closeEdit();
+  };
+
+  const applyPage = (patch: Partial<ProductData>) => {
+    setData((d) => {
+      const next = { ...d, ...patch };
+      if (patch.brandName && patch.brandName !== d.brandName) {
+        next.products = next.products.map((p) => ({
+          ...p,
+          brand: patch.brandName!,
+        }));
+      }
+      return next;
+    });
+    showToast("페이지 정보가 수정되었습니다");
+    closeEdit();
+  };
+
+  const copyLink = async () => {
+    try {
+      if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(data.link);
+      }
+    } catch {
+      /* mock */
+    }
+    showToast("링크가 복사됐어요 · 이제 어디든 붙여넣어 글로벌 판매 시작!");
+  };
+
+  const editingProduct = useMemo(
+    () =>
+      edit.productId
+        ? data.products.find((p) => p.id === edit.productId) ?? null
+        : null,
+    [edit.productId, data.products]
+  );
+
+  const draftProduct = useMemo(
+    () =>
+      draftProductId
+        ? data.products.find((p) => p.id === draftProductId) ?? null
+        : null,
+    [draftProductId, data.products]
+  );
+
+  const addPanelOpen = edit.isOpen && edit.scope === "add";
+
+  return (
+    <main className="min-h-screen bg-bg">
+      <Header onLogoClick={goLink} />
+
+      {step === "link" && (
+        <LinkCreateStep initialSlug={data.slug} onSubmit={handleLinkSubmit} />
+      )}
+
+      {step === "editor" && (
+        <GeneratedEditorStep
+          data={data}
+          draftProductId={draftProductId}
+          onEditProduct={openProductEdit}
+          onEditPage={openPageEdit}
+          onCopy={copyLink}
+          onPublish={copyLink}
+          onAddProduct={handleAddProduct}
+          rightPanel={
+            addPanelOpen ? (
+              <AddProductPanel
+                open={addPanelOpen}
+                product={draftProduct}
+                data={data}
+                onChange={liveProductChange}
+                onConfirm={confirmDraft}
+                onCancel={cancelDraft}
+              />
+            ) : null
+          }
+        />
+      )}
+
+      <ProductEditPanel
+        open={edit.isOpen && edit.scope === "product"}
+        product={edit.scope === "product" ? editingProduct : null}
+        data={data}
+        focus={edit.focus}
+        liveUpdate
+        onClose={closeEdit}
+        onApply={applyProduct}
+        onLiveChange={liveProductChange}
+      />
+
+      <PageEditPanel
+        open={edit.isOpen && edit.scope === "page"}
+        data={data}
+        onClose={closeEdit}
+        onApply={applyPage}
+      />
+
+      <Toast visible={toast.isVisible} message={toast.message} />
+    </main>
+  );
+}
+
+function deriveBrandName(slug: string): string {
+  if (!slug) return "My brand";
+  const cleaned = slug.replace(/-+/g, " ").trim();
+  if (!cleaned) return "My brand";
+  return cleaned
+    .split(/\s+/)
+    .map((w) => (w[0]?.toUpperCase() ?? "") + w.slice(1))
+    .join(" ");
+}
