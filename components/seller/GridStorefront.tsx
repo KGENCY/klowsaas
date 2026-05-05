@@ -27,12 +27,19 @@ export function GridStorefront({
   const cells = Math.max(4, products.length + 1);
   const noProducts = products.length === 0;
 
+  // Build category pills from unique Skin Match keywords across products.
+  const skinMatchTags = Array.from(
+    new Set(products.flatMap((p) => p.goodFor))
+  );
+
   return (
     <PhoneFrame brandName={brandName}>
       <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
         <div className="px-5 py-3 flex gap-2 overflow-x-auto scrollbar-hide">
           <CategoryPill active>All</CategoryPill>
-          <CategoryPill>{category}</CategoryPill>
+          {skinMatchTags.map((tag) => (
+            <CategoryPill key={tag}>{tag}</CategoryPill>
+          ))}
         </div>
 
         <div className="px-3 pb-6 grid grid-cols-2 gap-x-2 gap-y-5">
