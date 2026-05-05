@@ -2,14 +2,12 @@
 
 import { useRef, useState } from "react";
 import {
-  Menu,
-  Search,
-  ShoppingBag,
   Sparkles,
   Upload,
   ShieldCheck,
   Languages,
 } from "lucide-react";
+import { PhoneFrame } from "@/components/ui/PhoneFrame";
 
 interface Props {
   brandName: string;
@@ -18,6 +16,12 @@ interface Props {
   onFileSelected: (file: File) => void;
   onManual: () => void;
 }
+
+const ACCEPTED_TYPES = new Set([
+  "application/pdf",
+  "image/png",
+  "image/jpeg",
+]);
 
 export function MockupUploadStage({
   brandName,
@@ -28,11 +32,6 @@ export function MockupUploadStage({
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
-
-  const isAccepted = (file: File) =>
-    file.type === "application/pdf" ||
-    file.type === "image/png" ||
-    file.type === "image/jpeg";
 
   const onPick = () => {
     if (analyzing) return;
@@ -53,93 +52,26 @@ export function MockupUploadStage({
     setIsDragOver(false);
     if (analyzing) return;
     const file = e.dataTransfer.files?.[0];
-    if (file && isAccepted(file)) onFileSelected(file);
+    if (file && ACCEPTED_TYPES.has(file.type)) onFileSelected(file);
   };
 
   return (
     <div className="flex flex-col items-center w-full">
-      <div
-        className="relative mx-auto w-full max-w-[380px] rounded-[48px] bg-ink shadow-pop flex flex-col"
-        style={{
-          padding: 10,
-          aspectRatio: "9 / 19.2",
-          maxHeight: "calc(100vh - 140px)",
-        }}
-      >
-        {/* Side hardware buttons */}
-        <span
-          className="absolute left-[-2px] top-[110px] w-[3px] h-[36px] rounded-r bg-ink/80"
-          aria-hidden
-        />
-        <span
-          className="absolute left-[-2px] top-[160px] w-[3px] h-[60px] rounded-r bg-ink/80"
-          aria-hidden
-        />
-        <span
-          className="absolute left-[-2px] top-[230px] w-[3px] h-[60px] rounded-r bg-ink/80"
-          aria-hidden
-        />
-        <span
-          className="absolute right-[-2px] top-[180px] w-[3px] h-[80px] rounded-l bg-ink/80"
-          aria-hidden
-        />
-
-        <div className="relative flex flex-col flex-1 min-h-0 bg-white rounded-[38px] overflow-hidden">
-          {/* Status bar */}
-          <div className="relative flex items-center justify-between px-7 pt-2.5 pb-1 text-[11px] font-semibold text-ink flex-shrink-0">
-            <span className="tracking-tight">9:41</span>
-            <span
-              className="absolute left-1/2 top-2 -translate-x-1/2 w-[88px] h-[26px] rounded-full bg-ink"
-              aria-hidden
+      <PhoneFrame brandName={brandName}>
+        <div className="flex-1 flex flex-col px-6 pt-7 pb-5 min-h-0">
+          {analyzing ? (
+            <AnalyzingView />
+          ) : (
+            <UploadView
+              heading={uploadHeading(productCount)}
+              isDragOver={isDragOver}
+              onPick={onPick}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onManual={onManual}
             />
-            <span className="flex items-center gap-1 text-[10px]">
-              <span className="inline-flex items-end gap-[1.5px]">
-                <span className="w-[3px] h-[5px] bg-ink rounded-[1px]" />
-                <span className="w-[3px] h-[7px] bg-ink rounded-[1px]" />
-                <span className="w-[3px] h-[9px] bg-ink rounded-[1px]" />
-                <span className="w-[3px] h-[11px] bg-ink rounded-[1px]" />
-              </span>
-              <span className="ml-0.5 inline-block w-[18px] h-[10px] border border-ink rounded-[3px] relative">
-                <span className="absolute inset-[1px] right-[3px] bg-ink rounded-[1px]" />
-                <span className="absolute right-[-2px] top-[3px] w-[1px] h-[4px] bg-ink rounded-full" />
-              </span>
-            </span>
-          </div>
-
-          {/* App chrome */}
-          <div className="bg-white px-5 pt-3 pb-2.5 flex items-center justify-between border-b border-line/60 flex-shrink-0">
-            <button className="w-8 h-8 -ml-1 flex items-center justify-center">
-              <Menu className="w-[17px] h-[17px] text-ink" />
-            </button>
-            <div className="text-[14px] font-bold tracking-tight">
-              {brandName}
-            </div>
-            <div className="flex items-center gap-0.5">
-              <button className="w-8 h-8 flex items-center justify-center">
-                <Search className="w-[16px] h-[16px] text-ink" />
-              </button>
-              <button className="w-8 h-8 -mr-1 flex items-center justify-center">
-                <ShoppingBag className="w-[16px] h-[16px] text-ink" />
-              </button>
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 flex flex-col px-6 pt-7 pb-5 min-h-0">
-            {analyzing ? (
-              <AnalyzingView />
-            ) : (
-              <UploadView
-                heading={uploadHeading(productCount)}
-                isDragOver={isDragOver}
-                onPick={onPick}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                onManual={onManual}
-              />
-            )}
-          </div>
+          )}
         </div>
 
         <input
@@ -153,19 +85,19 @@ export function MockupUploadStage({
             e.target.value = "";
           }}
         />
-      </div>
+      </PhoneFrame>
     </div>
   );
 }
 
 function uploadHeading(productCount: number): string {
+  if (productCount === 0) return "BestSeller";
   const ordinals: Record<number, string> = {
     2: "소중한 두번째",
     3: "멋있는 세번째",
     4: "빛나는 네번째",
     5: "특별한 다섯번째",
   };
-  if (productCount === 0) return "BestSeller";
   return ordinals[productCount + 1] ?? `${productCount + 1}번째`;
 }
 
@@ -250,10 +182,7 @@ function AnalyzingView() {
   return (
     <div className="flex-1 flex flex-col items-center justify-center animate-fade-in">
       <div className="relative w-16 h-16 flex items-center justify-center">
-        <span
-          className="absolute inset-0 rounded-full border-2 border-ink/10"
-          aria-hidden
-        />
+        <span className="absolute inset-0 rounded-full border-2 border-ink/10" aria-hidden />
         <span
           className="absolute inset-0 rounded-full border-2 border-transparent border-t-ink animate-spin"
           style={{ animationDuration: "1.1s" }}

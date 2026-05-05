@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { MoreVertical } from "lucide-react";
 import type { ProductData } from "@/types";
 import { loadBrand, productSlug, FLAT_SHIPPING_USD } from "@/lib/brandStore";
-import { ProductVisual } from "@/components/ProductVisual";
+import { ProductVisual } from "@/components/ui/ProductVisual";
 
 interface PageProps {
   params: { slug: string };
@@ -112,11 +112,7 @@ function BrandView({
               className="group rounded-[16px] bg-white border border-line overflow-hidden hover:border-ink/30 transition-colors"
             >
               <div className="aspect-square relative">
-                <ProductVisual
-                  type={p.imageType}
-                  size="md"
-                  brandName={brand.brandName}
-                />
+                <ProductVisual size="md" brandName={brand.brandName} />
                 {p.discountRate > 0 && (
                   <span className="absolute top-2 left-2 px-1.5 py-0.5 rounded-md bg-white/95 text-[10.5px] font-bold text-ink tracking-tight border border-line">
                     {p.discountRate}%

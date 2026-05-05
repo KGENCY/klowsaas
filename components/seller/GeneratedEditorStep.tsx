@@ -123,7 +123,6 @@ export function GeneratedEditorStep({
               ) : (
                 <ConsumerPreview
                   brandName={data.brandName}
-                  category={data.category}
                   products={data.products}
                   activeProductId={activeProductId}
                   onSwitchProduct={setActiveProductId}

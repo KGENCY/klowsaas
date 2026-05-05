@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { ProductData } from "@/types";
-import { PanelShell } from "./PanelShell";
+import { PanelShell } from "@/components/ui/PanelShell";
 
 interface Props {
   open: boolean;

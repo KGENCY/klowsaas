@@ -17,13 +17,13 @@ import {
 import { saveBrand } from "@/lib/brandStore";
 import { sanitizeSlug } from "@/lib/pricing";
 
-import { Header } from "@/components/Header";
-import { LinkCreateStep } from "@/components/LinkCreateStep";
-import { GeneratedEditorStep } from "@/components/GeneratedEditorStep";
-import { ProductEditPanel } from "@/components/ProductEditPanel";
-import { PageEditPanel } from "@/components/PageEditPanel";
-import { AddProductPanel } from "@/components/AddProductPanel";
-import { Toast } from "@/components/Toast";
+import { Header } from "@/components/seller/Header";
+import { LinkCreateStep } from "@/components/seller/LinkCreateStep";
+import { GeneratedEditorStep } from "@/components/seller/GeneratedEditorStep";
+import { ProductEditPanel } from "@/components/seller/ProductEditPanel";
+import { PageEditPanel } from "@/components/seller/PageEditPanel";
+import { AddProductPanel } from "@/components/seller/AddProductPanel";
+import { Toast } from "@/components/ui/Toast";
 
 type AddStage = "idle" | "upload" | "analyzing";
 type AddEntry = "file" | "manual";

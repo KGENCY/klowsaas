@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ImagePlus, Check } from "lucide-react";
+import { ImagePlus } from "lucide-react";
 import type { EditFocus, Product, ProductData } from "@/types";
-import { PanelShell } from "./PanelShell";
-import { TagSelector } from "./TagSelector";
-import { ProductVisual } from "./ProductVisual";
+import { PanelShell } from "@/components/ui/PanelShell";
+import { TagSelector } from "@/components/ui/TagSelector";
+import { ProductVisual } from "@/components/ui/ProductVisual";
 import { benefitOptions, goodForOptions, ingredientOptions } from "@/lib/mockData";
 import {
   calculateCustomerPriceUSD,
@@ -191,7 +191,7 @@ export function ProductEditPanel({
       {/* Image */}
       <Section refSet={setSectionRef("image")} title={sectionTitles.image}>
         <div className="aspect-square rounded-2xl overflow-hidden border border-line">
-          <ProductVisual type={draft.imageType} size="lg" brandName={draft.brand} />
+          <ProductVisual size="lg" brandName={draft.brand} />
         </div>
         <button
           onClick={() => update({ imageType: "custom" })}

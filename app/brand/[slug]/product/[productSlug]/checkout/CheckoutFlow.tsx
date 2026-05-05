@@ -14,7 +14,7 @@ import {
 import type { Product, ProductData } from "@/types";
 import { FLAT_SHIPPING_USD } from "@/lib/brandStore";
 import { flagEmoji, type Country } from "@/lib/countries";
-import { ProductVisual } from "@/components/ProductVisual";
+import { ProductVisual } from "@/components/ui/ProductVisual";
 import { CountrySelector } from "@/components/consumer/CountrySelector";
 
 interface Props {
@@ -157,38 +157,34 @@ export function CheckoutFlow({ brand, product }: Props) {
           className="inline-flex items-center justify-center w-10 h-10 -ml-2 rounded-full hover:bg-white/60 transition-colors"
           aria-label="Back to brand"
         >
-          <ArrowLeft className="w-[18px] h-[18px] text-[#0F0F14]" />
+          <ArrowLeft className="w-[18px] h-[18px] text-ink" />
         </Link>
-        <div className="text-[11px] font-bold tracking-[0.28em] text-[#0F0F14]">
+        <div className="text-[11px] font-bold tracking-[0.28em] text-ink">
           KLOW
         </div>
-        <span className="inline-flex items-center gap-1 text-[11px] text-[#6B7280] font-medium">
+        <span className="inline-flex items-center gap-1 text-[11px] text-sub font-medium">
           <Lock className="w-[12px] h-[12px]" /> Secure
         </span>
       </header>
 
       <main className="relative mx-auto w-full max-w-[430px] px-5 pt-4">
         {/* Product mini summary */}
-        <section className="rounded-2xl bg-white border border-[#ECECF1] p-3 flex items-center gap-3">
+        <section className="rounded-2xl bg-white border border-line p-3 flex items-center gap-3">
           <div className="w-[64px] h-[64px] flex-shrink-0">
-            <ProductVisual
-              type={product.imageType}
-              size="sm"
-              brandName={brand.brandName}
-            />
+            <ProductVisual size="sm" brandName={brand.brandName} />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-[10.5px] text-[#6B7280] font-semibold tracking-wide truncate">
+            <div className="text-[10.5px] text-sub font-semibold tracking-wide truncate">
               {brand.brandName}
             </div>
-            <div className="text-[13.5px] font-semibold text-[#0F0F14] leading-tight line-clamp-2">
+            <div className="text-[13.5px] font-semibold text-ink leading-tight line-clamp-2">
               {product.name}
             </div>
             <div className="mt-1.5 inline-flex items-center gap-1.5">
-              <span className="text-[14px] font-bold text-[#0F0F14]">
+              <span className="text-[14px] font-bold text-ink">
                 ${product.priceUSD.toFixed(2)}
               </span>
-              <span className="px-1.5 py-0.5 rounded-full bg-[#FAFAFC] text-[#0F0F14] text-[9.5px] font-bold">
+              <span className="px-1.5 py-0.5 rounded-full bg-bg text-ink text-[9.5px] font-bold">
                 +${FLAT_SHIPPING_USD} ships
               </span>
             </div>
@@ -211,7 +207,7 @@ export function CheckoutFlow({ brand, product }: Props) {
                   <span className="text-[18px] leading-none">
                     {flagEmoji(form.country.code)}
                   </span>
-                  <span className="font-semibold text-[#0F0F14]">
+                  <span className="font-semibold text-ink">
                     {form.country.name}
                   </span>
                 </span>
@@ -244,10 +240,10 @@ export function CheckoutFlow({ brand, product }: Props) {
               onEdit={() => handleEdit("contact")}
               summary={
                 isValid("contact", form) && (
-                  <span className="text-[#0F0F14]">
+                  <span className="text-ink">
                     <span className="font-semibold">{form.fullName.trim()}</span>
-                    <span className="mx-1.5 text-[#ECECF1]">·</span>
-                    <span className="text-[#6B7280]">{form.email.trim()}</span>
+                    <span className="mx-1.5 text-line">·</span>
+                    <span className="text-sub">{form.email.trim()}</span>
                   </span>
                 )
               }
@@ -285,10 +281,10 @@ export function CheckoutFlow({ brand, product }: Props) {
               onEdit={() => handleEdit("address")}
               summary={
                 isValid("address", form) && (
-                  <span className="text-[#0F0F14] truncate block">
+                  <span className="text-ink truncate block">
                     <span className="font-semibold">{form.postal.trim()}</span>
-                    <span className="mx-1.5 text-[#ECECF1]">·</span>
-                    <span className="text-[#6B7280]">
+                    <span className="mx-1.5 text-line">·</span>
+                    <span className="text-sub">
                       {form.address1.trim()}
                       {form.address2.trim() && `, ${form.address2.trim()}`}
                     </span>
@@ -341,12 +337,12 @@ export function CheckoutFlow({ brand, product }: Props) {
               onEdit={() => handleEdit("city")}
               summary={
                 isValid("city", form) && (
-                  <span className="text-[#0F0F14]">
+                  <span className="text-ink">
                     <span className="font-semibold">{form.city.trim()}</span>
                     {form.country?.needsState && form.state.trim() && (
                       <>
-                        <span className="mx-1.5 text-[#ECECF1]">·</span>
-                        <span className="text-[#6B7280]">{form.state.trim()}</span>
+                        <span className="mx-1.5 text-line">·</span>
+                        <span className="text-sub">{form.state.trim()}</span>
                       </>
                     )}
                   </span>
@@ -424,13 +420,13 @@ function SectionCard({
         <button
           type="button"
           onClick={onEdit}
-          className="w-full text-left rounded-2xl bg-white border border-[#ECECF1] px-4 py-3 flex items-center gap-3 hover:border-[#0F0F14] transition-colors"
+          className="w-full text-left rounded-2xl bg-white border border-line px-4 py-3 flex items-center gap-3 hover:border-ink transition-colors"
         >
-          <span className="w-6 h-6 rounded-full bg-[#FAFAFC] flex items-center justify-center flex-shrink-0">
-            <Check className="w-[12px] h-[12px] text-[#0F0F14]" strokeWidth={3} />
+          <span className="w-6 h-6 rounded-full bg-bg flex items-center justify-center flex-shrink-0">
+            <Check className="w-[12px] h-[12px] text-ink" strokeWidth={3} />
           </span>
           <span className="flex-1 min-w-0 text-[13.5px] truncate">{summary}</span>
-          <span className="text-[11.5px] font-semibold text-[#0F0F14]">Change</span>
+          <span className="text-[11.5px] font-semibold text-ink">Change</span>
         </button>
       </div>
     );
@@ -438,12 +434,12 @@ function SectionCard({
 
   return (
     <div ref={innerRef} className="animate-fade-in">
-      <div className="rounded-2xl bg-white border border-[#ECECF1] p-5">
+      <div className="rounded-2xl bg-white border border-line p-5">
         <div className="flex items-center gap-2 mb-4">
-          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#FAFAFC] text-[#0F0F14] text-[10.5px] font-bold">
+          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-bg text-ink text-[10.5px] font-bold">
             {stepNum}
           </span>
-          <h2 className="text-[15px] font-bold tracking-tight text-[#0F0F14]">
+          <h2 className="text-[15px] font-bold tracking-tight text-ink">
             {title}
           </h2>
         </div>
@@ -462,7 +458,7 @@ function TrustRow({
 }) {
   return (
     <div className="flex justify-center animate-fade-in">
-      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAFAFC]/60 border border-[#ECECF1] text-[#0F0F14] text-[11px] font-semibold">
+      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-bg/60 border border-line text-ink text-[11px] font-semibold">
         {icon}
         {children}
       </span>
@@ -493,10 +489,10 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="block text-[11.5px] font-semibold text-[#6B7280] mb-1.5 px-1">
+      <span className="block text-[11.5px] font-semibold text-sub mb-1.5 px-1">
         {label}
         {optional && (
-          <span className="ml-1 text-[10px] font-medium text-[#6B7280]">
+          <span className="ml-1 text-[10px] font-medium text-sub">
             optional
           </span>
         )}
@@ -509,7 +505,7 @@ function Field({
         inputMode={inputMode}
         autoComplete={autoComplete}
         autoFocus={autoFocus}
-        className="w-full h-[48px] px-4 rounded-xl bg-[#FAFAFC] border border-transparent focus:border-[#0F0F14]/40 focus:bg-white outline-none text-[14.5px] placeholder:text-[#6B7280] transition-all"
+        className="w-full h-[48px] px-4 rounded-xl bg-bg border border-transparent focus:border-ink/40 focus:bg-white outline-none text-[14.5px] placeholder:text-sub transition-all"
       />
     </label>
   );
@@ -528,48 +524,48 @@ function ReviewCard({
 }) {
   return (
     <div ref={innerRef} className="animate-fade-in">
-      <div className="rounded-2xl bg-white border border-[#ECECF1] p-5">
+      <div className="rounded-2xl bg-white border border-line p-5">
         <div className="flex items-center gap-2 mb-4">
-          <Sparkles className="w-[14px] h-[14px] text-[#0F0F14]" />
-          <h2 className="text-[15px] font-bold tracking-tight text-[#0F0F14]">
+          <Sparkles className="w-[14px] h-[14px] text-ink" />
+          <h2 className="text-[15px] font-bold tracking-tight text-ink">
             Review
           </h2>
         </div>
 
-        <div className="text-[12.5px] text-[#6B7280] font-medium mb-3 truncate">
+        <div className="text-[12.5px] text-sub font-medium mb-3 truncate">
           {product.name}
         </div>
 
         <div className="space-y-2 text-[13.5px]">
           <div className="flex items-center justify-between">
-            <span className="text-[#6B7280]">Product</span>
-            <span className="font-semibold text-[#0F0F14]">
+            <span className="text-sub">Product</span>
+            <span className="font-semibold text-ink">
               ${product.priceUSD.toFixed(2)}
             </span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-[#6B7280] inline-flex items-center gap-1.5">
+            <span className="text-sub inline-flex items-center gap-1.5">
               Shipping
-              <span className="px-1.5 py-0.5 rounded-full bg-[#FAFAFC] text-[#0F0F14] text-[9.5px] font-bold">
+              <span className="px-1.5 py-0.5 rounded-full bg-bg text-ink text-[9.5px] font-bold">
                 Special rate
               </span>
             </span>
-            <span className="font-semibold text-[#0F0F14]">
+            <span className="font-semibold text-ink">
               ${FLAT_SHIPPING_USD.toFixed(2)}
             </span>
           </div>
         </div>
 
-        <div className="my-4 h-px bg-[#ECECF1]" />
+        <div className="my-4 h-px bg-line" />
 
         <div className="flex items-baseline justify-between">
-          <span className="text-[13px] font-semibold text-[#6B7280]">Total</span>
-          <span className="text-[24px] font-bold text-[#0F0F14] tracking-tight">
+          <span className="text-[13px] font-semibold text-sub">Total</span>
+          <span className="text-[24px] font-bold text-ink tracking-tight">
             ${total.toFixed(2)}
           </span>
         </div>
 
-        <div className="mt-5 rounded-xl bg-[#FAFAFC] border border-[#ECECF1] p-3 space-y-1.5">
+        <div className="mt-5 rounded-xl bg-bg border border-line p-3 space-y-1.5">
           <ReviewLine label="Ship to">
             {form.country && (
               <>
@@ -585,13 +581,13 @@ function ReviewCard({
           </ReviewLine>
         </div>
 
-        <div className="mt-4 flex items-center justify-center gap-3 text-[10.5px] text-[#6B7280] font-medium">
+        <div className="mt-4 flex items-center justify-center gap-3 text-[10.5px] text-sub font-medium">
           <span className="inline-flex items-center gap-1">
             <Lock className="w-[10px] h-[10px]" /> Secure
           </span>
-          <span className="text-[#ECECF1]">·</span>
+          <span className="text-line">·</span>
           <span>No surprise fees</span>
-          <span className="text-[#ECECF1]">·</span>
+          <span className="text-line">·</span>
           <span>Ships from Korea</span>
         </div>
       </div>
@@ -608,10 +604,10 @@ function ReviewLine({
 }) {
   return (
     <div className="flex items-start gap-2 text-[12px]">
-      <span className="w-[58px] flex-shrink-0 text-[#6B7280] font-medium">
+      <span className="w-[58px] flex-shrink-0 text-sub font-medium">
         {label}
       </span>
-      <span className="flex-1 text-[#0F0F14] break-words leading-snug">
+      <span className="flex-1 text-ink break-words leading-snug">
         {children}
       </span>
     </div>
@@ -631,22 +627,22 @@ function StickyFooter({
     <div className="fixed bottom-0 inset-x-0 z-30">
       <div className="mx-auto w-full max-w-[430px] px-5 pb-[max(env(safe-area-inset-bottom),16px)] pt-3 bg-bg/95 backdrop-blur border-t border-line">
         {!canPay ? (
-          <div className="rounded-2xl bg-white border border-[#ECECF1] px-4 py-3 flex items-center justify-between">
+          <div className="rounded-2xl bg-white border border-line px-4 py-3 flex items-center justify-between">
             <div>
-              <div className="text-[10.5px] text-[#6B7280] font-semibold">
+              <div className="text-[10.5px] text-sub font-semibold">
                 Flat $15 shipping included
               </div>
-              <div className="text-[16px] font-bold text-[#0F0F14] tracking-tight">
+              <div className="text-[16px] font-bold text-ink tracking-tight">
                 Total ${total.toFixed(2)}
               </div>
             </div>
-            <span className="text-[11px] text-[#6B7280] font-medium">
+            <span className="text-[11px] text-sub font-medium">
               Continue below ↓
             </span>
           </div>
         ) : (
           <>
-            <div className="text-center mb-2 text-[10.5px] text-[#6B7280] font-medium">
+            <div className="text-center mb-2 text-[10.5px] text-sub font-medium">
               Flat $15 shipping included
             </div>
             <button
@@ -677,37 +673,37 @@ function PaymentReady({
   return (
     <div className="min-h-screen bg-bg">
       <main className="relative mx-auto w-full max-w-[430px] px-5 pt-20 pb-10 text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#FAFAFC] mb-6 animate-pop">
-          <Check className="w-8 h-8 text-[#0F0F14]" strokeWidth={3} />
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-bg mb-6 animate-pop">
+          <Check className="w-8 h-8 text-ink" strokeWidth={3} />
         </div>
-        <h1 className="text-[24px] font-bold tracking-tight text-[#0F0F14]">
+        <h1 className="text-[24px] font-bold tracking-tight text-ink">
           Ready for payment
         </h1>
-        <p className="mt-2 text-[13.5px] text-[#6B7280] leading-snug">
+        <p className="mt-2 text-[13.5px] text-sub leading-snug">
           Payment integration coming soon.<br />Your details are saved for this session.
         </p>
 
-        <div className="mt-8 rounded-2xl bg-white border border-[#ECECF1] p-5 text-left">
-          <div className="text-[11px] text-[#6B7280] font-semibold tracking-wide uppercase">
+        <div className="mt-8 rounded-2xl bg-white border border-line p-5 text-left">
+          <div className="text-[11px] text-sub font-semibold tracking-wide uppercase">
             Order
           </div>
-          <div className="mt-1 text-[14px] font-semibold text-[#0F0F14] leading-tight">
+          <div className="mt-1 text-[14px] font-semibold text-ink leading-tight">
             {product.name}
           </div>
           <div className="mt-4 flex items-baseline justify-between">
-            <span className="text-[12px] text-[#6B7280]">Total charged</span>
-            <span className="text-[22px] font-bold text-[#0F0F14]">
+            <span className="text-[12px] text-sub">Total charged</span>
+            <span className="text-[22px] font-bold text-ink">
               ${total.toFixed(2)}
             </span>
           </div>
-          <div className="mt-1 text-right text-[10.5px] text-[#6B7280]">
+          <div className="mt-1 text-right text-[10.5px] text-sub">
             Flat $15 shipping included
           </div>
         </div>
 
         <Link
           href={`/brand/${brand.slug}`}
-          className="mt-8 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#0F0F14]"
+          className="mt-8 inline-flex items-center gap-1.5 text-[13px] font-semibold text-ink"
         >
           ← Back to {brand.brandName}
         </Link>

@@ -18,7 +18,7 @@ import {
   findProductBySlug,
   FLAT_SHIPPING_USD,
 } from "@/lib/brandStore";
-import { ProductVisual } from "@/components/ProductVisual";
+import { ProductVisual } from "@/components/ui/ProductVisual";
 
 interface PageProps {
   params: { slug: string; productSlug: string };
@@ -104,11 +104,7 @@ function ProductView({
       <main className="relative mx-auto w-full max-w-[430px] px-5 pt-4">
         {/* Hero image */}
         <div className="aspect-square rounded-[28px] overflow-hidden border border-line bg-white">
-          <ProductVisual
-            type={product.imageType}
-            size="lg"
-            brandName={brand.brandName}
-          />
+          <ProductVisual size="lg" brandName={brand.brandName} />
         </div>
 
         {/* Title */}
