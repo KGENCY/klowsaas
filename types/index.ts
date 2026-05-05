@@ -22,6 +22,8 @@ export interface Product {
   marginKRW: number;
   benefits: string[];
   ingredients: string[];
+  goodFor: string[];
+  photos: string[];
   description: string;
   bestFor: string[];
   howToUse: string;
@@ -52,7 +54,8 @@ export type EditFocus =
   | "name"
   | "price"
   | "benefits"
-  | "ingredients";
+  | "ingredients"
+  | "goodFor";
 
 export type EditScope = "product" | "page" | "add" | null;
 

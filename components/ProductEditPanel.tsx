@@ -6,7 +6,7 @@ import type { EditFocus, Product, ProductData } from "@/types";
 import { PanelShell } from "./PanelShell";
 import { TagSelector } from "./TagSelector";
 import { ProductVisual } from "./ProductVisual";
-import { benefitOptions, ingredientOptions } from "@/lib/mockData";
+import { benefitOptions, goodForOptions, ingredientOptions } from "@/lib/mockData";
 import {
   calculateCustomerPriceUSD,
   formatKRW,
@@ -31,6 +31,7 @@ const sectionOrder: EditFocus[] = [
   "name",
   "benefits",
   "ingredients",
+  "goodFor",
   "price",
 ];
 
@@ -39,6 +40,7 @@ const sectionTitles: Record<EditFocus, string> = {
   name: "상품명",
   benefits: "Main benefits",
   ingredients: "Key ingredients",
+  goodFor: "Good for",
   price: "가격",
 };
 
@@ -114,6 +116,7 @@ export function ProductEditPanel({
     draft?.name,
     draft?.benefits,
     draft?.ingredients,
+    draft?.goodFor,
     draft?.imageType,
     draft?.discountRate,
     krw,
@@ -233,6 +236,20 @@ export function ProductEditPanel({
           options={ingredientOptions}
           selected={draft.ingredients}
           onChange={(ingredients) => update({ ingredients })}
+          max={6}
+          allowCustom
+        />
+      </Section>
+
+      {/* Good for */}
+      <Section refSet={setSectionRef("goodFor")} title={sectionTitles.goodFor}>
+        <div className="text-[11.5px] text-sub mb-2">
+          피부 타입·고민 키워드 · 최대 6개
+        </div>
+        <TagSelector
+          options={goodForOptions}
+          selected={draft.goodFor}
+          onChange={(goodFor) => update({ goodFor })}
           max={6}
           allowCustom
         />

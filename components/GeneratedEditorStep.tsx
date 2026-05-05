@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import { Globe2, Copy } from "lucide-react";
 import type { EditFocus, ProductData } from "@/types";
 import { ConsumerPreview } from "./ConsumerPreview";
 import { GridStorefront } from "./GridStorefront";
@@ -16,7 +17,7 @@ interface Props {
   onAddProduct: () => void;
   onUploadFile: (file: File) => void;
   onManualStart: () => void;
-  onCancelAddStage: () => void;
+  onCopyLink: () => void;
   rightPanel?: ReactNode;
 }
 
@@ -30,7 +31,7 @@ export function GeneratedEditorStep({
   onAddProduct,
   onUploadFile,
   onManualStart,
-  onCancelAddStage,
+  onCopyLink,
   rightPanel,
 }: Props) {
   const [activeProductId, setActiveProductId] = useState<string>("");
@@ -59,7 +60,7 @@ export function GeneratedEditorStep({
 
   return (
     <div className="pb-12">
-      <div className="mx-auto max-w-[1440px] px-6 pt-3 animate-fade-in">
+      <div className="mx-auto max-w-[1440px] px-6 pt-10 animate-fade-in">
         <div
           className="grid items-start"
           style={{
@@ -71,6 +72,31 @@ export function GeneratedEditorStep({
         >
           {/* Mockup column */}
           <div className="w-full min-w-0 flex flex-col items-center">
+            {/* Link bar — width matches the mockup, sits directly above it */}
+            <div className="w-full max-w-[380px] flex items-center gap-2 mb-3">
+              <div className="flex-1 flex items-center gap-2 px-3 h-[40px] rounded-xl bg-white border border-line min-w-0">
+                <Globe2 className="w-3.5 h-3.5 text-ink flex-shrink-0" />
+                <span className="text-[12.5px] font-medium text-ink truncate">
+                  {data.link}
+                </span>
+                <button
+                  type="button"
+                  onClick={onCopyLink}
+                  aria-label="링크 복사"
+                  className="ml-auto w-7 h-7 -mr-1 rounded-lg flex items-center justify-center text-sub hover:text-ink hover:bg-bg transition-colors flex-shrink-0"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={onCopyLink}
+                className="px-3 h-[40px] rounded-xl bg-ink text-white text-[12px] font-semibold whitespace-nowrap hover:opacity-90 transition-opacity flex-shrink-0"
+              >
+                글로벌 판매시작
+              </button>
+            </div>
+
             <div
               key={`${mode}-${hasDraft ? "draft" : "stable"}`}
               className="w-full animate-fade-in flex justify-center"
@@ -79,9 +105,9 @@ export function GeneratedEditorStep({
                 <MockupUploadStage
                   brandName={data.brandName}
                   analyzing={addStage === "analyzing"}
+                  productCount={data.products.length}
                   onFileSelected={onUploadFile}
                   onManual={onManualStart}
-                  onCancel={onCancelAddStage}
                 />
               ) : mode === "grid" ? (
                 <GridStorefront
@@ -106,8 +132,8 @@ export function GeneratedEditorStep({
             </div>
           </div>
 
-          {/* Right side: add panel — meaningfully wider than the phone */}
-          <div className="w-full min-w-0 overflow-hidden flex justify-center">
+          {/* Right side: add panel — aligned with mockup top (link bar height + gap) */}
+          <div className="w-full min-w-0 overflow-hidden flex justify-center pt-[52px]">
             {hasDraft && rightPanel ? (
               <div className="w-full max-w-[620px]">{rightPanel}</div>
             ) : null}

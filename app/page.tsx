@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Globe2, Copy } from "lucide-react";
 import type {
   EditFocus,
   EditState,
@@ -86,14 +85,6 @@ export default function Page() {
       analysisTimer.current = null;
     }
     setAddStage("upload");
-  };
-
-  const cancelAddStage = () => {
-    if (analysisTimer.current) {
-      clearTimeout(analysisTimer.current);
-      analysisTimer.current = null;
-    }
-    setAddStage("idle");
   };
 
   const startDraftWithFile = (file: File) => {
@@ -223,34 +214,9 @@ export default function Page() {
 
   const addPanelOpen = edit.isOpen && edit.scope === "add";
 
-  const headerLinkBar =
-    step === "editor" ? (
-      <div className="flex items-center gap-2 w-full">
-        <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-xl bg-white border border-line min-w-0">
-          <Globe2 className="w-3.5 h-3.5 text-ink flex-shrink-0" />
-          <span className="text-[13px] font-medium text-ink truncate">
-            {data.link}
-          </span>
-        </div>
-        <button
-          onClick={copyLink}
-          className="px-3 h-[38px] rounded-xl bg-white border border-line text-ink text-[12.5px] font-semibold flex items-center gap-1.5 hover:border-ink/30 transition-colors flex-shrink-0"
-        >
-          <Copy className="w-3.5 h-3.5" />
-          <span className="hidden md:inline">복사</span>
-        </button>
-        <button
-          onClick={copyLink}
-          className="px-3.5 h-[38px] rounded-xl bg-ink text-white text-[12.5px] font-semibold hover:opacity-90 transition-opacity flex-shrink-0 whitespace-nowrap"
-        >
-          판매 시작
-        </button>
-      </div>
-    ) : null;
-
   return (
     <main className="min-h-screen bg-bg">
-      <Header onLogoClick={goLink} centerSlot={headerLinkBar} />
+      <Header onLogoClick={goLink} />
 
       {step === "link" && (
         <LinkCreateStep initialSlug={data.slug} onSubmit={handleLinkSubmit} />
@@ -265,7 +231,7 @@ export default function Page() {
           onAddProduct={handleAddProduct}
           onUploadFile={startDraftWithFile}
           onManualStart={startDraftManual}
-          onCancelAddStage={cancelAddStage}
+          onCopyLink={copyLink}
           rightPanel={
             addPanelOpen ? (
               <AddProductPanel

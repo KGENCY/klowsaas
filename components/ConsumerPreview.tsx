@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   Pencil,
   Star,
+  ImagePlus,
 } from "lucide-react";
 import type { EditFocus, Product } from "@/types";
 import { ProductVisual } from "./ProductVisual";
@@ -43,7 +44,7 @@ export function ConsumerPreview({
       className="relative mx-auto w-full max-w-[380px] rounded-[48px] bg-ink shadow-pop flex flex-col"
       style={{
         padding: 10,
-        maxHeight: "min(760px, calc(100vh - 160px))",
+        height: "min(760px, calc(100vh - 160px))",
       }}
     >
       {/* Side buttons (subtle, decorative) */}
@@ -192,14 +193,29 @@ export function ConsumerPreview({
           <ShieldCheck className="w-3 h-3" />
           <span>Secure</span>
         </div>
-
-        {/* Buy now */}
-        <button className="mt-3 w-full h-[44px] rounded-2xl bg-ink text-white font-bold text-[14px] active:scale-[0.99] transition-transform">
-          {product.priceUSD > 0
-            ? `Buy Now · ${formatUSD(product.priceUSD)}`
-            : "Buy Now"}
-        </button>
       </div>
+
+      {/* Photo strip — 2 visible, horizontal scroll for the rest */}
+      {product.photos.length > 0 && (
+        <div className="px-5 mt-3">
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide snap-x snap-mandatory">
+            {product.photos.map((p, i) => (
+              <div
+                key={`${p}-${i}`}
+                className="snap-start flex-shrink-0 rounded-2xl bg-bg border border-line overflow-hidden flex flex-col items-center justify-center"
+                style={{ width: "calc((100% - 8px) / 2)", aspectRatio: "1 / 1" }}
+              >
+                <ImagePlus className="w-5 h-5 text-sub/60" />
+                <span className="mt-1 px-2 text-[9.5px] text-sub text-center truncate max-w-full">
+                  {p.replace(/\.[^.]+$/, "")}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="mt-3" />
 
       <Divider />
 
@@ -255,6 +271,32 @@ export function ConsumerPreview({
         </SectionBlock>
       </ClickableSection>
 
+      {/* Good for — skin types & concerns */}
+      <ClickableSection
+        editable={editable}
+        focus="goodFor"
+        onEdit={(f) => onEdit(product.id, f)}
+      >
+        <SectionBlock title="Good for">
+          {product.goodFor.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {product.goodFor.map((g) => (
+                <span
+                  key={g}
+                  className="px-2.5 py-1 rounded-full bg-bg border border-line text-[11.5px] font-medium text-ink/80"
+                >
+                  {g}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <span className="text-[12px] text-sub/60">
+              예: Dry, Sensitive, Glass skin
+            </span>
+          )}
+        </SectionBlock>
+      </ClickableSection>
+
       {product.reviewSnippets.length > 0 && (
         <>
           <Divider />
@@ -301,6 +343,15 @@ export function ConsumerPreview({
       )}
 
       <div className="h-2" />
+      </div>
+
+      {/* Sticky Buy Now footer */}
+      <div className="px-4 pt-2.5 pb-3 border-t border-line/60 bg-white flex-shrink-0">
+        <button className="w-full h-[44px] rounded-2xl bg-ink text-white font-bold text-[14px] active:scale-[0.99] transition-transform">
+          {product.priceUSD > 0
+            ? `Buy Now · ${formatUSD(product.priceUSD)}`
+            : "Buy Now"}
+        </button>
       </div>
       </div>
     </div>

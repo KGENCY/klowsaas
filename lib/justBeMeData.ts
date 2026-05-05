@@ -28,6 +28,8 @@ const heartleaf: Product = {
   marginKRW: 0,
   benefits: ["Tone up", "Soothing", "Hydration"],
   ingredients: ["Heartleaf Extract", "Centella Asiatica", "Niacinamide"],
+  goodFor: ["Dull", "Sensitive", "Combination"],
+  photos: [],
   bestFor: ["Dull", "Sensitive", "Combination"],
   description:
     "A daily Korean tone-up cream with heartleaf for soothed, glowing skin.",
@@ -45,7 +47,7 @@ const heartleaf: Product = {
     "Japan",
     "Germany",
   ],
-  estimatedDelivery: "7–12 days",
+  estimatedDelivery: "5–11 days",
   shippingFeeText: "Flat $15 global shipping",
 };
 
@@ -62,6 +64,8 @@ const cica: Product = {
   marginKRW: 0,
   benefits: ["Soothing", "Barrier care", "Hydration"],
   ingredients: ["Cica", "Madecassoside", "Panthenol"],
+  goodFor: ["Sensitive", "Irritated", "Combination"],
+  photos: [],
   bestFor: ["Sensitive", "Irritated", "Combination"],
   description:
     "A lightweight calming serum with cica complex for stressed-out skin.",
@@ -87,6 +91,8 @@ const riceGlow: Product = {
   marginKRW: 0,
   benefits: ["Brightening", "Glass skin", "Hydration"],
   ingredients: ["Rice Extract", "Niacinamide", "Hyaluronic Acid"],
+  goodFor: ["Dry", "Dull", "Glass skin"],
+  photos: [],
   bestFor: ["Dry", "Dull"],
   description: "A glow-boosting essence inspired by traditional Korean rice water.",
   howToUse: "Pat into clean skin before serum.",
@@ -111,6 +117,8 @@ const glassMist: Product = {
   marginKRW: 0,
   benefits: ["Hydration", "Glass skin", "Cooling"],
   ingredients: ["Hyaluronic Acid", "Panthenol", "Green Tea"],
+  goodFor: ["Dry", "Combination", "Glass skin"],
+  photos: [],
   bestFor: ["Dry", "Combination"],
   description: "A glassy, weightless mist for an instant hydration reset.",
   howToUse: "Mist 20cm from the face whenever skin feels dry.",

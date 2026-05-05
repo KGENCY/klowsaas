@@ -21,7 +21,7 @@ import {
   formatUSD,
   parseKRWInput,
 } from "@/lib/pricing";
-import { mockAutofillFromFile } from "@/lib/mockData";
+import { goodForOptions, mockAutofillFromFile } from "@/lib/mockData";
 
 type Tab = "file" | "manual";
 type Step = "upload" | "info" | "price" | "review";
@@ -54,7 +54,6 @@ export function AddProductPanel({
   const [autoFilling, setAutoFilling] = useState(false);
   const [settlementRaw, setSettlementRaw] = useState("");
   const [reviewLoading, setReviewLoading] = useState(false);
-  const [photos, setPhotos] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const reviewInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
@@ -68,7 +67,6 @@ export function AddProductPanel({
       setSettlementRaw("");
       setAutoFilling(false);
       setReviewLoading(false);
-      setPhotos([]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -115,11 +113,10 @@ export function AddProductPanel({
   const onPickPhoto = () => photoInputRef.current?.click();
 
   const addPhoto = (file: File) => {
-    setPhotos((prev) => [...prev, file.name]);
-    update({ imageType: "custom" });
+    update({ photos: [...product.photos, file.name] });
   };
   const removePhoto = (name: string) => {
-    setPhotos((prev) => prev.filter((n) => n !== name));
+    update({ photos: product.photos.filter((n) => n !== name) });
   };
 
   const handleFile = (file: File) => {
@@ -178,7 +175,7 @@ export function AddProductPanel({
       className={`flex flex-col w-full bg-white rounded-[28px] border border-line shadow-card overflow-hidden ${
         open ? "animate-slide-in-right" : ""
       }`}
-      style={{ maxHeight: "calc(100vh - 130px)" }}
+      style={{ height: "min(760px, calc(100vh - 160px))" }}
     >
       {/* Tabs */}
       <div className="px-6 pt-5 pb-1 flex-shrink-0">
@@ -222,7 +219,6 @@ export function AddProductPanel({
             product={product}
             mode={tab}
             onUpdate={update}
-            photos={photos}
             onPickPhoto={onPickPhoto}
             onRemovePhoto={removePhoto}
           />
@@ -431,14 +427,12 @@ function InfoStep({
   product,
   mode,
   onUpdate,
-  photos,
   onPickPhoto,
   onRemovePhoto,
 }: {
   product: Product;
   mode: Tab;
   onUpdate: (patch: Partial<Product>) => void;
-  photos: string[];
   onPickPhoto: () => void;
   onRemovePhoto: (name: string) => void;
 }) {
@@ -453,16 +447,14 @@ function InfoStep({
       )}
 
       <div className={`${isAuto ? "" : "mt-5"} space-y-5`}>
-        {!isAuto && (
-          <Block label="대표 사진">
-            <PhotoRow
-              photos={photos}
-              onPick={onPickPhoto}
-              onRemove={onRemovePhoto}
-              max={5}
-            />
-          </Block>
-        )}
+        <Block label="대표 사진">
+          <PhotoRow
+            photos={product.photos}
+            onPick={onPickPhoto}
+            onRemove={onRemovePhoto}
+            max={6}
+          />
+        </Block>
 
         <Block label="제품명">
           <input
@@ -492,6 +484,21 @@ function InfoStep({
             onChange={(ingredients) => onUpdate({ ingredients })}
           />
         </Block>
+
+        <Block label="GOOD FOR">
+          <EditablePillRow
+            items={product.goodFor}
+            variant="outline"
+            placeholder="추가 (예: Dry)"
+            max={6}
+            onChange={(goodFor) => onUpdate({ goodFor })}
+          />
+          <SuggestionChips
+            options={goodForOptions}
+            selected={product.goodFor}
+            onAdd={(v) => onUpdate({ goodFor: [...product.goodFor, v] })}
+          />
+        </Block>
       </div>
     </div>
   );
@@ -509,21 +516,21 @@ function PhotoRow({
   max: number;
 }) {
   return (
-    <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1">
+    <div className="flex items-center gap-2.5 overflow-x-auto scrollbar-hide pb-1">
       {photos.map((name) => (
         <div
           key={name}
-          className="relative w-[76px] h-[76px] flex-shrink-0 rounded-2xl bg-bg border border-line overflow-hidden flex items-center justify-center"
+          className="relative w-[108px] h-[108px] flex-shrink-0 rounded-2xl bg-bg border border-line overflow-hidden flex items-center justify-center"
         >
-          <ImagePlus className="w-5 h-5 text-sub/60" />
-          <span className="absolute bottom-1 left-1 right-1 text-[9.5px] text-center font-medium text-sub truncate">
+          <ImagePlus className="w-6 h-6 text-sub/60" />
+          <span className="absolute bottom-1.5 left-1.5 right-1.5 text-[10.5px] text-center font-medium text-sub truncate">
             {name.replace(/\.[^.]+$/, "")}
           </span>
           <button
             type="button"
             onClick={() => onRemove(name)}
             aria-label={`${name} 삭제`}
-            className="absolute top-1 right-1 w-5 h-5 rounded-full bg-ink text-white flex items-center justify-center hover:opacity-90 transition-opacity"
+            className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-ink text-white flex items-center justify-center hover:opacity-90 transition-opacity"
           >
             <X className="w-3 h-3" strokeWidth={2.8} />
           </button>
@@ -533,10 +540,10 @@ function PhotoRow({
         <button
           type="button"
           onClick={onPick}
-          className="w-[76px] h-[76px] flex-shrink-0 rounded-2xl border-2 border-dashed border-line bg-white hover:border-ink/40 hover:bg-bg/60 transition-colors flex flex-col items-center justify-center gap-1 text-sub hover:text-ink"
+          className="w-[108px] h-[108px] flex-shrink-0 rounded-2xl border-2 border-dashed border-line bg-white hover:border-ink/40 hover:bg-bg/60 transition-colors flex flex-col items-center justify-center gap-1.5 text-sub hover:text-ink"
         >
-          <Plus className="w-5 h-5" />
-          <span className="text-[10.5px] font-semibold">사진 추가</span>
+          <Plus className="w-6 h-6" />
+          <span className="text-[11.5px] font-semibold">사진 추가</span>
         </button>
       )}
     </div>
@@ -725,7 +732,7 @@ function ReviewStep({
   return (
     <div className="animate-fade-in">
       <h2 className="text-[22px] sm:text-[24px] font-bold leading-[1.25] tracking-tight">
-        네이버 리뷰 캡쳐본을 올리면,
+        리뷰 캡쳐본을 올리면,
         <br />자동으로 번역 리뷰가 적용돼요!
       </h2>
       <p className="mt-2.5 text-[13px] text-sub leading-[1.55]">
@@ -926,6 +933,33 @@ function TabBtn({
       {icon}
       {label}
     </button>
+  );
+}
+
+function SuggestionChips({
+  options,
+  selected,
+  onAdd,
+}: {
+  options: string[];
+  selected: string[];
+  onAdd: (value: string) => void;
+}) {
+  const remaining = options.filter((o) => !selected.includes(o));
+  if (remaining.length === 0) return null;
+  return (
+    <div className="mt-2.5 flex flex-wrap gap-1.5">
+      {remaining.map((o) => (
+        <button
+          key={o}
+          type="button"
+          onClick={() => onAdd(o)}
+          className="px-2.5 py-1 rounded-full text-[12px] font-medium bg-bg border border-line text-sub hover:border-ink/40 hover:text-ink transition-colors"
+        >
+          + {o}
+        </button>
+      ))}
+    </div>
   );
 }
 

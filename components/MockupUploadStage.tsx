@@ -14,17 +14,17 @@ import {
 interface Props {
   brandName: string;
   analyzing: boolean;
+  productCount: number;
   onFileSelected: (file: File) => void;
   onManual: () => void;
-  onCancel: () => void;
 }
 
 export function MockupUploadStage({
   brandName,
   analyzing,
+  productCount,
   onFileSelected,
   onManual,
-  onCancel,
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -130,6 +130,7 @@ export function MockupUploadStage({
               <AnalyzingView />
             ) : (
               <UploadView
+                heading={uploadHeading(productCount)}
                 isDragOver={isDragOver}
                 onPick={onPick}
                 onDragOver={handleDragOver}
@@ -153,20 +154,23 @@ export function MockupUploadStage({
           }}
         />
       </div>
-
-      {!analyzing && (
-        <button
-          onClick={onCancel}
-          className="mt-5 text-[12px] font-medium text-sub hover:text-ink transition-colors"
-        >
-          취소
-        </button>
-      )}
     </div>
   );
 }
 
+function uploadHeading(productCount: number): string {
+  const ordinals: Record<number, string> = {
+    2: "소중한 두번째",
+    3: "멋있는 세번째",
+    4: "빛나는 네번째",
+    5: "특별한 다섯번째",
+  };
+  if (productCount === 0) return "BestSeller";
+  return ordinals[productCount + 1] ?? `${productCount + 1}번째`;
+}
+
 function UploadView({
+  heading,
   isDragOver,
   onPick,
   onDragOver,
@@ -174,6 +178,7 @@ function UploadView({
   onDrop,
   onManual,
 }: {
+  heading: string;
   isDragOver: boolean;
   onPick: () => void;
   onDragOver: (e: React.DragEvent) => void;
@@ -184,7 +189,7 @@ function UploadView({
   return (
     <div className="flex-1 flex flex-col animate-fade-in min-h-0">
       <h2 className="text-[19px] font-bold leading-[1.3] tracking-tight text-ink">
-        BestSeller 제품의
+        {heading} 제품의
         <br />
         상세페이지 한 장만 올려주세요
       </h2>
