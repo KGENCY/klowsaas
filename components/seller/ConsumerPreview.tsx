@@ -93,7 +93,16 @@ export function ConsumerPreview({
             {product.photos.length > 3 ? (
               <div className="w-full h-full flex overflow-x-auto snap-x snap-mandatory scrollbar-hide">
                 <div className="snap-center flex-shrink-0 w-full h-full">
-                  <ProductVisual size="lg" brandName={product.brand || brandName} />
+                  {product.mainPhoto ? (
+                    <img
+                      src={product.mainPhoto}
+                      alt=""
+                      className="w-full h-full object-cover"
+                      draggable={false}
+                    />
+                  ) : (
+                    <ProductVisual size="lg" brandName={product.brand || brandName} />
+                  )}
                 </div>
                 {product.photos.slice(3).map((p, i) => (
                   <div
@@ -113,6 +122,13 @@ export function ConsumerPreview({
                   </div>
                 ))}
               </div>
+            ) : product.mainPhoto ? (
+              <img
+                src={product.mainPhoto}
+                alt=""
+                className="w-full h-full object-cover"
+                draggable={false}
+              />
             ) : (
               <ProductVisual size="lg" brandName={product.brand || brandName} />
             )}

@@ -13,8 +13,10 @@ type AddStage = "idle" | "upload" | "analyzing";
 interface Props {
   data: ProductData;
   draftProductId: string | null;
+  editingProductId: string | null;
   addStage: AddStage;
   onEditProduct: (productId: string, focus: EditFocus) => void;
+  onOpenProduct: (productId: string) => void;
   onAddProduct: () => void;
   onUploadFile: (file: File) => void;
   onManualStart: () => void;
@@ -26,8 +28,10 @@ type ViewMode = "grid" | "detail" | "uploading";
 export function GeneratedEditorStep({
   data,
   draftProductId,
+  editingProductId,
   addStage,
   onEditProduct,
+  onOpenProduct,
   onAddProduct,
   onUploadFile,
   onManualStart,
@@ -45,10 +49,13 @@ export function GeneratedEditorStep({
     if (draftProductId) {
       setActiveProductId(draftProductId);
       setMode("detail");
+    } else if (editingProductId) {
+      setActiveProductId(editingProductId);
+      setMode("detail");
     } else {
       setMode("grid");
     }
-  }, [draftProductId, addStage]);
+  }, [draftProductId, editingProductId, addStage]);
 
   useEffect(() => {
     if (!data.products.find((p) => p.id === activeProductId)) {
@@ -57,9 +64,12 @@ export function GeneratedEditorStep({
   }, [data.products, activeProductId]);
 
   const hasDraft = !!draftProductId;
+  const isEditing = !!editingProductId && !hasDraft;
+  const splitView = hasDraft || isEditing;
   const isFirstProductReady =
     data.products.length === 1 &&
     !hasDraft &&
+    !isEditing &&
     mode === "grid" &&
     addStage === "idle";
 
@@ -69,8 +79,8 @@ export function GeneratedEditorStep({
         <div
           className="grid items-start"
           style={{
-            gridTemplateColumns: hasDraft ? "minmax(0, 1fr) minmax(0, 1.25fr)" : "1fr 0fr",
-            columnGap: hasDraft ? "56px" : "0px",
+            gridTemplateColumns: splitView ? "minmax(0, 1fr) minmax(0, 1.25fr)" : "1fr 0fr",
+            columnGap: splitView ? "56px" : "0px",
             transition:
               "grid-template-columns 520ms cubic-bezier(0.22, 1, 0.36, 1), column-gap 520ms cubic-bezier(0.22, 1, 0.36, 1)",
           }}
@@ -105,7 +115,7 @@ export function GeneratedEditorStep({
             </div>
 
             <div
-              key={`${mode}-${hasDraft ? "draft" : "stable"}`}
+              key={`${mode}-${splitView ? "split" : "stable"}`}
               className="w-full animate-fade-in flex justify-center"
             >
               {mode === "uploading" ? (
@@ -121,7 +131,7 @@ export function GeneratedEditorStep({
                   brandName={data.brandName}
                   category={data.category}
                   products={data.products}
-                  onOpenProduct={() => {}}
+                  onOpenProduct={onOpenProduct}
                   onEdit={onEditProduct}
                   onAddProduct={onAddProduct}
                 />
@@ -138,9 +148,9 @@ export function GeneratedEditorStep({
             </div>
           </div>
 
-          {/* Right side: add panel — aligned with mockup top (link bar height + gap) */}
+          {/* Right side: add or edit panel — aligned with mockup top (link bar height + gap) */}
           <div className="w-full min-w-0 overflow-hidden flex justify-center pt-[52px]">
-            {hasDraft && rightPanel ? (
+            {splitView && rightPanel ? (
               <div className="w-full max-w-[620px]">{rightPanel}</div>
             ) : null}
           </div>

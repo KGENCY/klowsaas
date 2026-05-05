@@ -23,6 +23,7 @@ export interface Product {
   benefits: string[];
   ingredients: string[];
   goodFor: string[];
+  mainPhoto?: string;
   photos: string[];
   description: string;
   bestFor: string[];

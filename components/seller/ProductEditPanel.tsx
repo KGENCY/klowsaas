@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ImagePlus } from "lucide-react";
+import { ImagePlus, Plus, X } from "lucide-react";
 import type { EditFocus, Product, ProductData } from "@/types";
 import { PanelShell } from "@/components/ui/PanelShell";
 import { TagSelector } from "@/components/ui/TagSelector";
@@ -21,6 +21,7 @@ interface Props {
   data: ProductData;
   focus: EditFocus | null;
   liveUpdate?: boolean;
+  inline?: boolean;
   onClose: () => void;
   onApply: (productId: string, next: Product) => void;
   onLiveChange?: (productId: string, next: Product) => void;
@@ -50,6 +51,7 @@ export function ProductEditPanel({
   data,
   focus,
   liveUpdate,
+  inline,
   onClose,
   onApply,
   onLiveChange,
@@ -59,6 +61,9 @@ export function ProductEditPanel({
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
+  // Re-sync local draft only when the editing target changes (different
+  // product) — not on every parent update, so the live-update loop does not
+  // overwrite mid-edit state and cause the displayed price to flicker.
   useEffect(() => {
     if (product) {
       setDraft({ ...product });
@@ -68,7 +73,8 @@ export function ProductEditPanel({
           : ""
       );
     }
-  }, [product]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product?.id]);
 
   useEffect(() => {
     if (!open || !focus) return;
@@ -119,6 +125,8 @@ export function ProductEditPanel({
     draft?.goodFor,
     draft?.imageType,
     draft?.discountRate,
+    draft?.mainPhoto,
+    draft?.photos,
     krw,
     liveUpdate,
   ]);
@@ -148,21 +156,57 @@ export function ProductEditPanel({
     sectionRefs.current[key] = el;
   };
 
-  return (
-    <PanelShell
-      open={open}
-      title="상세 페이지 다듬기"
-      onClose={onClose}
-      scrollRef={scrollRef}
-      footer={
-        <button
-          onClick={apply}
-          className="w-full h-[54px] rounded-2xl bg-ink text-white font-semibold text-[15.5px] hover:opacity-90 transition-opacity"
-        >
-          적용하기
-        </button>
-      }
+  const photoInputRef = useRef<HTMLInputElement | null>(null);
+  const mainPhotoInputRef = useRef<HTMLInputElement | null>(null);
+  const onPickPhoto = () => photoInputRef.current?.click();
+  const onPickMainPhoto = () => mainPhotoInputRef.current?.click();
+  const addPhoto = (file: File) => {
+    if (!draft) return;
+    const url = URL.createObjectURL(file);
+    update({ photos: [...draft.photos, url] });
+  };
+  const removePhoto = (url: string) => {
+    if (!draft) return;
+    update({ photos: draft.photos.filter((p) => p !== url) });
+    if (url.startsWith("blob:")) {
+      try {
+        URL.revokeObjectURL(url);
+      } catch {}
+    }
+  };
+  const setMainPhoto = (file: File) => {
+    if (!draft) return;
+    const prev = draft.mainPhoto;
+    const url = URL.createObjectURL(file);
+    update({ mainPhoto: url });
+    if (prev && prev.startsWith("blob:")) {
+      try {
+        URL.revokeObjectURL(prev);
+      } catch {}
+    }
+  };
+  const clearMainPhoto = () => {
+    if (!draft) return;
+    const prev = draft.mainPhoto;
+    update({ mainPhoto: undefined });
+    if (prev && prev.startsWith("blob:")) {
+      try {
+        URL.revokeObjectURL(prev);
+      } catch {}
+    }
+  };
+
+  const applyButton = (
+    <button
+      onClick={apply}
+      className="w-full h-[54px] rounded-2xl bg-ink text-white font-semibold text-[15.5px] hover:opacity-90 transition-opacity"
     >
+      적용하기
+    </button>
+  );
+
+  const body = (
+    <>
       {/* Section nav */}
       <div className="-mx-6 px-6 pb-3 mb-1 flex gap-1.5 overflow-x-auto scrollbar-hide sticky top-0 bg-white z-10">
         {sectionOrder.map((s) => (
@@ -190,15 +234,115 @@ export function ProductEditPanel({
 
       {/* Image */}
       <Section refSet={setSectionRef("image")} title={sectionTitles.image}>
-        <div className="aspect-square rounded-2xl overflow-hidden border border-line">
-          <ProductVisual size="lg" brandName={draft.brand} />
+        <div className="flex items-start gap-3">
+          <button
+            type="button"
+            onClick={onPickMainPhoto}
+            className="group relative w-[180px] aspect-square rounded-2xl overflow-hidden border border-line bg-bg hover:border-ink/40 transition-colors"
+          >
+            {draft.mainPhoto ? (
+              <img
+                src={draft.mainPhoto}
+                alt=""
+                className="w-full h-full object-cover"
+                draggable={false}
+              />
+            ) : (
+              <ProductVisual size="md" brandName={draft.brand} />
+            )}
+            <div className="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-ink/55 to-transparent flex items-center justify-center gap-1.5 text-white text-[11px] font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
+              <ImagePlus className="w-3.5 h-3.5" />
+              {draft.mainPhoto ? "이미지 변경" : "이미지 업로드"}
+            </div>
+          </button>
+          <div className="flex flex-col gap-1.5">
+            <button
+              type="button"
+              onClick={onPickMainPhoto}
+              className="px-3 h-9 rounded-xl bg-ink text-white text-[12px] font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5"
+            >
+              <ImagePlus className="w-3.5 h-3.5" />
+              {draft.mainPhoto ? "변경" : "업로드"}
+            </button>
+            {draft.mainPhoto && (
+              <button
+                type="button"
+                onClick={clearMainPhoto}
+                className="px-3 h-9 rounded-xl bg-white border border-line text-ink text-[12px] font-medium hover:bg-bg transition-colors"
+              >
+                기본으로
+              </button>
+            )}
+          </div>
         </div>
-        <button
-          onClick={() => update({ imageType: "custom" })}
-          className="mt-3 w-full h-[44px] rounded-xl border border-dashed border-line hover:border-ink/40 transition-colors flex items-center justify-center gap-2 text-[13px] font-medium text-sub"
-        >
-          <ImagePlus className="w-4 h-4" />새 이미지 업로드
-        </button>
+        <input
+          ref={mainPhotoInputRef}
+          type="file"
+          accept="image/png,image/jpeg"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) setMainPhoto(f);
+            e.target.value = "";
+          }}
+        />
+
+        <div className="mt-4 text-[11.5px] font-semibold text-sub mb-2">
+          추가 사진
+        </div>
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1">
+          {draft.photos.map((url, i) => {
+            const isImage =
+              url.startsWith("blob:") ||
+              url.startsWith("data:") ||
+              url.startsWith("http") ||
+              url.startsWith("/");
+            return (
+              <div
+                key={`${url}-${i}`}
+                className="relative w-[72px] h-[72px] flex-shrink-0 rounded-xl bg-bg border border-line overflow-hidden flex items-center justify-center"
+              >
+                {isImage ? (
+                  <img
+                    src={url}
+                    alt=""
+                    className="w-full h-full object-cover"
+                    draggable={false}
+                  />
+                ) : (
+                  <ImagePlus className="w-4 h-4 text-sub/60" />
+                )}
+                <button
+                  type="button"
+                  onClick={() => removePhoto(url)}
+                  aria-label="사진 삭제"
+                  className="absolute top-1 right-1 w-4 h-4 rounded-full bg-ink text-white flex items-center justify-center hover:opacity-90 transition-opacity"
+                >
+                  <X className="w-2.5 h-2.5" strokeWidth={2.8} />
+                </button>
+              </div>
+            );
+          })}
+          <button
+            type="button"
+            onClick={onPickPhoto}
+            className="w-[72px] h-[72px] flex-shrink-0 rounded-xl border-2 border-dashed border-line bg-white text-sub hover:border-ink/40 hover:text-ink transition-colors flex flex-col items-center justify-center gap-0.5"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="text-[10px] font-semibold">추가</span>
+          </button>
+        </div>
+        <input
+          ref={photoInputRef}
+          type="file"
+          accept="image/png,image/jpeg"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) addPhoto(f);
+            e.target.value = "";
+          }}
+        />
       </Section>
 
       {/* Name */}
@@ -334,6 +478,52 @@ export function ProductEditPanel({
           )}
         </div>
       </Section>
+    </>
+  );
+
+  if (inline) {
+    if (!open) return null;
+    return (
+      <div
+        className="flex flex-col w-full bg-white rounded-[28px] border border-line shadow-card overflow-hidden animate-slide-in-right"
+        style={{ height: "min(760px, calc(100vh - 160px))" }}
+      >
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-line/60 flex-shrink-0">
+          <h3 className="text-[17px] font-bold tracking-tight">
+            상세 페이지 다듬기
+          </h3>
+          <button
+            onClick={onClose}
+            aria-label="닫기"
+            className="w-9 h-9 -mr-1.5 rounded-full hover:bg-bg flex items-center justify-center transition-colors"
+          >
+            <X className="w-[18px] h-[18px]" />
+          </button>
+        </div>
+        <div
+          ref={(el) => {
+            scrollRef.current = el;
+          }}
+          className="flex-1 overflow-y-auto px-6 py-5"
+        >
+          {body}
+        </div>
+        <div className="px-6 py-4 border-t border-line/60 bg-white flex-shrink-0">
+          {applyButton}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <PanelShell
+      open={open}
+      title="상세 페이지 다듬기"
+      onClose={onClose}
+      scrollRef={scrollRef}
+      footer={applyButton}
+    >
+      {body}
     </PanelShell>
   );
 }

@@ -148,7 +148,7 @@ export default function Page() {
     // mockup reflecting the new product so the user can add another.
   };
 
-  const openProductEdit = (productId: string, focus: EditFocus) => {
+  const openProductEdit = (productId: string, focus: EditFocus | null) => {
     setEdit({ isOpen: true, scope: "product", productId, focus });
   };
   const openPageEdit = () => {
@@ -202,6 +202,9 @@ export default function Page() {
   );
 
   const addPanelOpen = edit.isOpen && edit.scope === "add";
+  const productEditOpen = edit.isOpen && edit.scope === "product";
+  const editingProductId =
+    productEditOpen && !draftProductId ? edit.productId : null;
 
   return (
     <main className="min-h-screen bg-bg">
@@ -215,8 +218,10 @@ export default function Page() {
         <GeneratedEditorStep
           data={data}
           draftProductId={draftProductId}
+          editingProductId={editingProductId}
           addStage={addStage}
           onEditProduct={openProductEdit}
+          onOpenProduct={(id) => openProductEdit(id, null)}
           onAddProduct={handleAddProduct}
           onUploadFile={startDraftWithFile}
           onManualStart={startDraftManual}
@@ -232,21 +237,22 @@ export default function Page() {
                 onConfirm={confirmDraft}
                 onCancel={cancelDraft}
               />
+            ) : productEditOpen ? (
+              <ProductEditPanel
+                open={productEditOpen}
+                product={editingProduct}
+                data={data}
+                focus={edit.focus}
+                liveUpdate
+                inline
+                onClose={closeEdit}
+                onApply={applyProduct}
+                onLiveChange={liveProductChange}
+              />
             ) : null
           }
         />
       )}
-
-      <ProductEditPanel
-        open={edit.isOpen && edit.scope === "product"}
-        product={edit.scope === "product" ? editingProduct : null}
-        data={data}
-        focus={edit.focus}
-        liveUpdate
-        onClose={closeEdit}
-        onApply={applyProduct}
-        onLiveChange={liveProductChange}
-      />
 
       <PageEditPanel
         open={edit.isOpen && edit.scope === "page"}

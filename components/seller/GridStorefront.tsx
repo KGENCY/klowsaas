@@ -35,7 +35,7 @@ export function GridStorefront({
           <CategoryPill>{category}</CategoryPill>
         </div>
 
-        <div className="px-5 pb-6 grid grid-cols-2 gap-x-3 gap-y-5">
+        <div className="px-3 pb-6 grid grid-cols-2 gap-x-2 gap-y-5">
           {Array.from({ length: cells }).map((_, i) => {
             const product = products[i];
             if (product) {
@@ -90,12 +90,9 @@ function ProductCell({
         </span>
       </button>
       <div className="mt-2.5">
-        <div className="text-[10.5px] text-sub uppercase tracking-wider font-medium truncate">
-          {product.brand}
-        </div>
         <button
           onClick={onOpen}
-          className="mt-0.5 text-left text-[12.5px] font-semibold leading-[1.3] line-clamp-2 hover:opacity-70 transition-opacity"
+          className="text-left text-[12.5px] font-semibold leading-[1.3] line-clamp-2 hover:opacity-70 transition-opacity"
         >
           {product.name || <span className="text-sub/60">제품명 없음</span>}
         </button>
@@ -155,7 +152,6 @@ function AddCell({
       {/* Reserve below to match product cell height alignment */}
       {!noPadding && (
         <div className="mt-2.5 invisible">
-          <div className="text-[10.5px]">_</div>
           <div className="text-[12.5px]">_</div>
           <div className="text-[12px] mt-1.5">_</div>
         </div>
