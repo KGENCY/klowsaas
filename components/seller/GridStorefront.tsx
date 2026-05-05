@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Heart, Plus } from "lucide-react";
 import type { Product, EditFocus } from "@/types";
 import { ProductVisual } from "@/components/ui/ProductVisual";
@@ -23,28 +24,56 @@ export function GridStorefront({
   onEdit,
   onAddProduct,
 }: Props) {
-  // Always render at least 4 cells so the dashed "add" placeholders are visible.
-  const cells = Math.max(4, products.length + 1);
-  const noProducts = products.length === 0;
-
   // Build category pills from unique Skin Match keywords across products.
   const skinMatchTags = Array.from(
     new Set(products.flatMap((p) => p.goodFor))
   );
 
+  const [activeTag, setActiveTag] = useState<string>("All");
+
+  // Reset to "All" if the currently selected tag disappears (e.g. after edits).
+  useEffect(() => {
+    if (activeTag !== "All" && !skinMatchTags.includes(activeTag)) {
+      setActiveTag("All");
+    }
+  }, [activeTag, skinMatchTags]);
+
+  const isAll = activeTag === "All";
+  const visibleProducts = isAll
+    ? products
+    : products.filter((p) => p.goodFor.includes(activeTag));
+
+  // All view: products + 1 primary add + 2 secondary plus boxes (default).
+  // Tag view: filtered products + only 1 primary add box.
+  const cells = isAll
+    ? Math.max(4, visibleProducts.length + 3)
+    : visibleProducts.length + 1;
+  const noProducts = visibleProducts.length === 0 && isAll;
+
   return (
     <PhoneFrame brandName={brandName}>
       <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
         <div className="px-5 py-3 flex gap-2 overflow-x-auto scrollbar-hide">
-          <CategoryPill active>All</CategoryPill>
+          <CategoryPill
+            active={isAll}
+            onClick={() => setActiveTag("All")}
+          >
+            All
+          </CategoryPill>
           {skinMatchTags.map((tag) => (
-            <CategoryPill key={tag}>{tag}</CategoryPill>
+            <CategoryPill
+              key={tag}
+              active={activeTag === tag}
+              onClick={() => setActiveTag(tag)}
+            >
+              {tag}
+            </CategoryPill>
           ))}
         </div>
 
         <div className="px-3 pb-6 grid grid-cols-2 gap-x-2 gap-y-5">
           {Array.from({ length: cells }).map((_, i) => {
-            const product = products[i];
+            const product = visibleProducts[i];
             if (product) {
               return (
                 <ProductCell
@@ -56,7 +85,7 @@ export function GridStorefront({
               );
             }
             // First empty cell after products = the highlighted "add"
-            const primary = i === products.length;
+            const primary = i === visibleProducts.length;
             return (
               <AddCell
                 key={`add-${i}`}
@@ -170,12 +199,16 @@ function AddCell({
 function CategoryPill({
   children,
   active,
+  onClick,
 }: {
   children: React.ReactNode;
   active?: boolean;
+  onClick?: () => void;
 }) {
   return (
     <button
+      type="button"
+      onClick={onClick}
       className={`px-3.5 py-1.5 rounded-full text-[12px] font-semibold whitespace-nowrap transition-colors ${
         active
           ? "bg-ink text-white"
