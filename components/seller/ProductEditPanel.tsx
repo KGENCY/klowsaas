@@ -39,9 +39,9 @@ const sectionOrder: EditFocus[] = [
 const sectionTitles: Record<EditFocus, string> = {
   image: "대표 이미지",
   name: "상품명",
-  benefits: "Main benefits",
-  ingredients: "Key ingredients",
-  goodFor: "Skin Match",
+  benefits: "대표 효능",
+  ingredients: "핵심 성분",
+  goodFor: "피부 타입·고민",
   price: "가격",
 };
 
@@ -358,7 +358,7 @@ export function ProductEditPanel({
       {/* Benefits */}
       <Section refSet={setSectionRef("benefits")} title={sectionTitles.benefits}>
         <div className="text-[11.5px] text-sub mb-2">
-          예: Glass skin, Hydration · 최대 4개
+          예: 광채 피부, 보습 · 최대 4개
         </div>
         <TagSelector
           options={benefitOptions}
@@ -403,7 +403,7 @@ export function ProductEditPanel({
       <Section refSet={setSectionRef("price")} title={sectionTitles.price}>
         <div className="rounded-2xl border border-line bg-white p-4">
           <div className="text-[11.5px] font-medium text-sub mb-1.5">
-            정산 희망 금액 (₩)
+            실제 정산 받으실 금액 (₩)
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[26px] font-bold">₩</span>
@@ -426,6 +426,9 @@ export function ProductEditPanel({
           <div className="text-[32px] font-bold tracking-tight leading-none">
             {formatUSD(calc.customerPriceUSD)}
           </div>
+          <div className="mt-2 inline-flex rounded-full bg-emerald-400 px-2.5 py-1 text-[10px] font-black tracking-wide text-emerald-950">
+            전 세계 무료배송 포함
+          </div>
         </div>
 
         <div className="mt-3 rounded-2xl border border-line divide-y divide-line/70 overflow-hidden bg-white">
@@ -436,13 +439,13 @@ export function ProductEditPanel({
             sub={`₩${data.exchangeRate.toLocaleString()} = $1`}
           />
           <BreakdownRow
-            label="KLOW 배송비"
+            label="글로벌 배송비 포함"
             value={`+ ${formatUSD(data.shippingUSD)}`}
           />
           <BreakdownRow
-            label="결제 처리"
+            label="서비스 수수료"
             value={`${Math.round(data.paymentFeeRate * 100)}%`}
-            sub="해외 카드·환전 처리"
+            sub="해외 결제·환전·운영 처리"
             muted
           />
         </div>

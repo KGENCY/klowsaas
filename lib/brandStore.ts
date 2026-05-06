@@ -6,7 +6,7 @@ import { justBeMeData } from "./justBeMeData";
 const STORAGE_KEY = (slug: string) => `klow:brand:${slug}`;
 const INDEX_KEY = "klow:brand:index";
 
-const FLAT_SHIPPING_USD = 15;
+const FLAT_SHIPPING_USD = 0;
 
 export { FLAT_SHIPPING_USD };
 

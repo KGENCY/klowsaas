@@ -16,7 +16,6 @@ import {
   loadBrand,
   productSlug,
   findProductBySlug,
-  FLAT_SHIPPING_USD,
 } from "@/lib/brandStore";
 import { ProductVisual } from "@/components/ui/ProductVisual";
 
@@ -44,7 +43,7 @@ export default function ProductDetailPage({ params }: PageProps) {
     return (
       <div className="min-h-screen bg-bg">
         <main className="relative mx-auto w-full max-w-[430px] px-5 pt-32 text-center text-[13px] text-sub">
-          Loading…
+          불러오는 중…
         </main>
       </div>
     );
@@ -54,12 +53,12 @@ export default function ProductDetailPage({ params }: PageProps) {
     return (
       <div className="min-h-screen bg-bg">
         <main className="relative mx-auto w-full max-w-[430px] px-5 pt-32 text-center">
-          <div className="text-[15px] font-bold text-ink">Product not found</div>
+          <div className="text-[15px] font-bold text-ink">상품을 찾을 수 없습니다</div>
           <Link
             href={`/brand/${params.slug}`}
             className="mt-4 inline-block text-[12.5px] font-semibold text-ink underline"
           >
-            ← Back to brand
+            ← 브랜드로 돌아가기
           </Link>
         </main>
       </div>
@@ -77,10 +76,10 @@ function ProductView({
   product: Product;
 }) {
   const trustItems = [
-    { icon: <Truck className="w-4 h-4" />, label: `Flat $${FLAT_SHIPPING_USD} shipping` },
-    { icon: <Globe2 className="w-4 h-4" />, label: "Ships from Korea" },
-    { icon: <ShieldCheck className="w-4 h-4" />, label: "No surprise fees" },
-    { icon: <Lock className="w-4 h-4" />, label: "Secure checkout" },
+    { icon: <Truck className="w-4 h-4" />, label: "전 세계 무료배송 포함" },
+    { icon: <Globe2 className="w-4 h-4" />, label: "한국에서 발송" },
+    { icon: <ShieldCheck className="w-4 h-4" />, label: "추가 비용 없음" },
+    { icon: <Lock className="w-4 h-4" />, label: "안전한 주문" },
   ];
 
   return (
@@ -89,7 +88,7 @@ function ProductView({
         <Link
           href={`/brand/${brand.slug}`}
           className="inline-flex items-center justify-center w-10 h-10 -ml-2 rounded-full hover:bg-white/60 transition-colors"
-          aria-label="Back to brand"
+          aria-label="브랜드로 돌아가기"
         >
           <ArrowLeft className="w-[18px] h-[18px] text-ink" />
         </Link>
@@ -97,7 +96,7 @@ function ProductView({
           KLOW
         </div>
         <span className="inline-flex items-center gap-1 text-[11px] text-sub font-medium">
-          <Lock className="w-[12px] h-[12px]" /> Secure
+          <Lock className="w-[12px] h-[12px]" /> 안전 주문
         </span>
       </header>
 
@@ -176,14 +175,14 @@ function ProductView({
 
         {/* Benefits */}
         {product.benefits.length > 0 && (
-          <Section title="Benefits">
+          <Section title="대표 효능">
             <ChipRow items={product.benefits} variant="dark" />
           </Section>
         )}
 
         {/* Ingredients */}
         {product.ingredients.length > 0 && (
-          <Section title="Key ingredients">
+          <Section title="핵심 성분">
             <ChipRow items={product.ingredients} variant="neutral" />
           </Section>
         )}
@@ -191,37 +190,37 @@ function ProductView({
         {/* Price preview */}
         <section className="mt-6 rounded-2xl bg-white border border-line p-4">
           <div className="text-[11px] font-semibold tracking-wide text-sub uppercase mb-2">
-            What you'll pay
+            결제 예상 금액
           </div>
           <div className="space-y-1.5 text-[13.5px]">
             <div className="flex items-center justify-between">
-              <span className="text-sub">Product</span>
+              <span className="text-sub">상품 금액</span>
               <span className="font-semibold text-ink">
                 ${product.priceUSD.toFixed(2)}
               </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sub inline-flex items-center gap-1.5">
-                Shipping
-                <span className="px-1.5 py-0.5 rounded-full bg-bg text-ink text-[9.5px] font-bold border border-line">
-                  Flat fee
+                배송비
+                <span className="px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[9.5px] font-bold border border-emerald-100">
+                  포함
                 </span>
               </span>
               <span className="font-semibold text-ink">
-                ${FLAT_SHIPPING_USD.toFixed(2)}
+                무료
               </span>
             </div>
             <div className="pt-2 mt-2 border-t border-line flex items-baseline justify-between">
-              <span className="text-[12.5px] font-semibold text-sub">Total</span>
+              <span className="text-[12.5px] font-semibold text-sub">총 결제 금액</span>
               <span className="text-[20px] font-bold text-ink tracking-tight">
-                ${(product.priceUSD + FLAT_SHIPPING_USD).toFixed(2)}
+                ${product.priceUSD.toFixed(2)}
               </span>
             </div>
           </div>
         </section>
 
         <p className="mt-6 text-center text-[11.5px] text-sub tracking-wide">
-          Powered by KLOW · {product.estimatedDelivery || "Ships worldwide from Seoul"}
+          KLOW 제공 · {product.estimatedDelivery || "서울에서 전 세계 발송"}
         </p>
       </main>
 
@@ -229,13 +228,13 @@ function ProductView({
       <div className="fixed bottom-0 inset-x-0 z-30">
         <div className="mx-auto w-full max-w-[430px] px-5 pb-[max(env(safe-area-inset-bottom),16px)] pt-3 bg-bg/95 backdrop-blur border-t border-line">
           <div className="text-center mb-2 text-[10.5px] text-sub font-medium">
-            Flat ${FLAT_SHIPPING_USD} shipping included at checkout
+            전 세계 무료배송 포함
           </div>
           <Link
             href={`/brand/${brand.slug}/product/${productSlug(product.name)}/checkout`}
             className="w-full h-[58px] rounded-2xl bg-ink hover:opacity-90 text-white font-bold text-[16px] tracking-tight inline-flex items-center justify-center gap-2 transition-opacity active:scale-[0.99]"
           >
-            Get it in my country
+            내 국가로 주문하기
             <ArrowRight className="w-[16px] h-[16px]" strokeWidth={2.5} />
           </Link>
         </div>

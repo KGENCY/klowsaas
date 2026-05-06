@@ -2,13 +2,13 @@ import type { Product, ProductData } from "@/types";
 
 const exchangeRate = 1350;
 const shippingUSD = 20;
-const paymentFeeRate = 0.05;
+const paymentFeeRate = 0.15;
 
 export const defaultProductData: ProductData = {
   brandName: "",
   slug: "",
   link: "klow.kr/",
-  category: "Skincare",
+  category: "스킨케어",
   settlementKRW: 32000,
   exchangeRate,
   shippingUSD,
@@ -38,58 +38,52 @@ export function createBlankProduct(brandName: string, id?: string): Product {
     rating: 4.9,
     reviewCount: 0,
     reviewSnippets: [],
-    shippingCountries: [
-      "United States",
-      "Canada",
-      "Australia",
-      "Singapore",
-      "United Kingdom",
-    ],
-    estimatedDelivery: "5–11 days",
-    shippingFeeText: "Flat $15 global shipping",
+    shippingCountries: ["미국", "캐나다", "호주", "싱가포르", "영국"],
+    estimatedDelivery: "5-11일",
+    shippingFeeText: "전 세계 무료배송 포함",
   };
 }
 
 export const goodForOptions = [
-  "Dry Skin",
-  "Oily Skin",
-  "Combination Skin",
-  "Sensitive Skin",
-  "Acne Skin",
-  "Anti-aging",
-  "Glass skin",
-  "Dullness",
-  "Redness",
-  "Pores",
+  "건성 피부",
+  "지성 피부",
+  "복합성 피부",
+  "민감성 피부",
+  "여드름성 피부",
+  "탄력 저하",
+  "글래스 스킨",
+  "칙칙함",
+  "붉은기",
+  "모공",
 ];
 
 export const benefitOptions = [
-  "Glass skin",
-  "Hydration",
-  "Acne care",
-  "Anti-aging",
-  "Soothing",
-  "Brightening",
-  "Barrier care",
-  "Pore care",
-  "Sensitive skin",
-  "Oil control",
-  "Cooling",
+  "글래스 스킨",
+  "수분 공급",
+  "트러블 케어",
+  "탄력 케어",
+  "진정",
+  "브라이트닝",
+  "장벽 케어",
+  "모공 케어",
+  "민감성 케어",
+  "유분 조절",
+  "쿨링",
 ];
 
 export const ingredientOptions = [
-  "Hyaluronic Acid",
-  "Niacinamide",
-  "Panthenol",
-  "Ceramide",
-  "Cica",
-  "Retinol",
-  "Peptide",
-  "Vitamin C",
+  "히알루론산",
+  "나이아신아마이드",
+  "판테놀",
+  "세라마이드",
+  "시카",
+  "레티놀",
+  "펩타이드",
+  "비타민 C",
   "AHA/BHA",
-  "Rice Extract",
-  "Green Tea",
-  "Cucumber Extract",
+  "쌀 추출물",
+  "녹차",
+  "오이 추출물",
 ];
 
 export function mockAutofillFromFile(
@@ -100,11 +94,11 @@ export function mockAutofillFromFile(
   const isDrOasis =
     normalizedBrand.includes("droasislab") ||
     normalizedBrand.includes("doctoroasislab") ||
-    brand.includes("오아시스");
+    brand.includes("닥터오아시스");
 
   if (isDrOasis) {
     return {
-      name: "[NEW] Supergen Triple Rebalancing Cream 50g",
+      name: "슈퍼젠 트리플 리밸런싱 크림 50g",
       brand,
       imageType: "custom",
       mainPhoto:
@@ -112,21 +106,21 @@ export function mockAutofillFromFile(
       discountRate: 15,
       priceUSD: 35.26,
       originalPriceUSD: 41.48,
-      benefits: ["Barrier care", "Hydration", "Home aesthetic"],
-      ingredients: ["Triple Collagen", "Spicule", "Glyceryl Glucoside"],
-      goodFor: ["Dry Skin", "Sensitive Skin", "Barrier care"],
-      bestFor: ["Dry Skin", "Sensitive Skin", "Barrier care"],
+      benefits: ["장벽 케어", "수분 공급", "홈 에스테틱"],
+      ingredients: ["트리플 콜라겐", "스피큘", "글리세릴글루코사이드"],
+      goodFor: ["건성 피부", "민감성 피부", "장벽 케어"],
+      bestFor: ["건성 피부", "민감성 피부", "장벽 케어"],
       description:
-        "A home-aesthetic rebalancing cream for barrier support and lasting hydration.",
+        "피부 장벽과 오래 지속되는 보습감을 위한 홈 에스테틱 리밸런싱 크림입니다.",
       howToUse:
-        "Apply at the last step of skincare and gently press into skin until absorbed.",
+        "스킨케어 마지막 단계에서 적당량을 바르고 흡수될 때까지 부드럽게 눌러주세요.",
       reviewCount: 248,
       reviewSnippets: [
         {
           author: "Emily R.",
-          country: "USA",
+          country: "미국",
           rating: 5,
-          text: "The texture feels like a clinic-grade K-beauty routine without being heavy.",
+          text: "무겁지 않은데도 에스테틱 케어를 받은 듯한 사용감이 좋았어요.",
         },
       ],
       photos: [],
@@ -135,25 +129,25 @@ export function mockAutofillFromFile(
 
   const presets: Partial<Product>[] = [
     {
-      name: "Glass Glow Daily Serum",
+      name: "글래스 글로우 데일리 세럼",
       imageType: "rice",
-      benefits: ["Glass skin", "Hydration", "Brightening"],
-      ingredients: ["Niacinamide", "Hyaluronic Acid", "Rice Extract"],
-      goodFor: ["Dry Skin", "Glass skin", "Dullness"],
+      benefits: ["글래스 스킨", "수분 공급", "브라이트닝"],
+      ingredients: ["나이아신아마이드", "히알루론산", "쌀 추출물"],
+      goodFor: ["건성 피부", "글래스 스킨", "칙칙함"],
     },
     {
-      name: "Cica Calm Soothing Cream",
+      name: "시카 카밍 수딩 크림",
       imageType: "green-tea",
-      benefits: ["Soothing", "Barrier care", "Hydration"],
-      ingredients: ["Cica", "Panthenol", "Ceramide"],
-      goodFor: ["Sensitive Skin", "Redness", "Dry Skin"],
+      benefits: ["진정", "장벽 케어", "수분 공급"],
+      ingredients: ["시카", "판테놀", "세라마이드"],
+      goodFor: ["민감성 피부", "붉은기", "건성 피부"],
     },
     {
-      name: "Cucumber Cooling Toner",
+      name: "오이 쿨링 토너",
       imageType: "cucumber",
-      benefits: ["Cooling", "Hydration", "Soothing"],
-      ingredients: ["Cucumber Extract", "Hyaluronic Acid", "Aloe"],
-      goodFor: ["Oily Skin", "Combination Skin", "Pores"],
+      benefits: ["쿨링", "수분 공급", "진정"],
+      ingredients: ["오이 추출물", "히알루론산", "알로에"],
+      goodFor: ["지성 피부", "복합성 피부", "모공"],
     },
   ];
   const seed = fileName.length % presets.length;

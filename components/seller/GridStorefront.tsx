@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Heart, Plus } from "lucide-react";
-import type { Product, EditFocus } from "@/types";
+import type { EditFocus, Product } from "@/types";
 import { ProductVisual } from "@/components/ui/ProductVisual";
 import { PhoneFrame } from "@/components/ui/PhoneFrame";
 import { formatUSD } from "@/lib/pricing";
@@ -18,33 +18,25 @@ interface Props {
 
 export function GridStorefront({
   brandName,
-  category,
   products,
   onOpenProduct,
   onEdit,
   onAddProduct,
 }: Props) {
-  // Build category pills from unique Skin Match keywords across products.
-  const skinMatchTags = Array.from(
-    new Set(products.flatMap((p) => p.goodFor))
-  );
+  const skinMatchTags = Array.from(new Set(products.flatMap((p) => p.goodFor)));
+  const [activeTag, setActiveTag] = useState<string>("전체");
 
-  const [activeTag, setActiveTag] = useState<string>("All");
-
-  // Reset to "All" if the currently selected tag disappears (e.g. after edits).
   useEffect(() => {
-    if (activeTag !== "All" && !skinMatchTags.includes(activeTag)) {
-      setActiveTag("All");
+    if (activeTag !== "전체" && !skinMatchTags.includes(activeTag)) {
+      setActiveTag("전체");
     }
   }, [activeTag, skinMatchTags]);
 
-  const isAll = activeTag === "All";
+  const isAll = activeTag === "전체";
   const visibleProducts = isAll
     ? products
-    : products.filter((p) => p.goodFor.includes(activeTag));
+    : products.filter((product) => product.goodFor.includes(activeTag));
 
-  // All view: products + 1 primary add + 2 secondary plus boxes (default).
-  // Tag view: filtered products + only 1 primary add box.
   const cells = isAll
     ? Math.max(4, visibleProducts.length + 3)
     : visibleProducts.length + 1;
@@ -54,11 +46,8 @@ export function GridStorefront({
     <PhoneFrame brandName={brandName}>
       <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide">
         <div className="px-5 py-3 flex gap-2 overflow-x-auto scrollbar-hide">
-          <CategoryPill
-            active={isAll}
-            onClick={() => setActiveTag("All")}
-          >
-            All
+          <CategoryPill active={isAll} onClick={() => setActiveTag("전체")}>
+            전체
           </CategoryPill>
           {skinMatchTags.map((tag) => (
             <CategoryPill
@@ -84,7 +73,7 @@ export function GridStorefront({
                 />
               );
             }
-            // First empty cell after products = the highlighted "add"
+
             const primary = i === visibleProducts.length;
             return (
               <AddCell
@@ -139,7 +128,7 @@ function ProductCell({
           onClick={onOpen}
           className="text-left text-[12.5px] font-semibold leading-[1.3] line-clamp-2 hover:opacity-70 transition-opacity"
         >
-          {product.name || <span className="text-sub/60">제품명 없음</span>}
+          {product.name || <span className="text-sub/60">상품명 없음</span>}
         </button>
         <button onClick={onEditPrice} className="mt-1.5 flex items-baseline gap-1.5">
           {product.discountRate > 0 && (
@@ -148,7 +137,7 @@ function ProductCell({
             </span>
           )}
           <span className="font-bold text-[14px]">
-            {product.priceUSD > 0 ? formatUSD(product.priceUSD) : "—"}
+            {product.priceUSD > 0 ? formatUSD(product.priceUSD) : "가격 미정"}
           </span>
         </button>
       </div>
@@ -194,7 +183,6 @@ function AddCell({
           )}
         </div>
       </button>
-      {/* Reserve below to match product cell height alignment */}
       {!noPadding && (
         <div className="mt-2.5 invisible">
           <div className="text-[12.5px]">_</div>

@@ -44,8 +44,8 @@ export function ConsumerPreview({
         <div className="px-4 pt-2.5 pb-3 border-t border-line/60 bg-white flex-shrink-0">
           <button className="w-full h-[44px] rounded-2xl bg-ink text-white font-bold text-[14px] active:scale-[0.99] transition-transform">
             {product.priceUSD > 0
-              ? `Buy Now · ${formatUSD(product.priceUSD)}`
-              : "Buy Now"}
+              ? `바로 구매 · ${formatUSD(product.priceUSD)}`
+              : "바로 구매"}
           </button>
         </div>
       }
@@ -197,13 +197,13 @@ export function ConsumerPreview({
 
           <div className="mt-3 flex items-center gap-1.5 text-[10.5px] font-medium text-sub/85">
             <Globe2 className="w-3 h-3" />
-            <span>Ships worldwide</span>
+            <span>전 세계 배송</span>
             <span className="opacity-40">·</span>
             <Truck className="w-3 h-3" />
             <span>{product.estimatedDelivery}</span>
             <span className="opacity-40">·</span>
             <ShieldCheck className="w-3 h-3" />
-            <span>Secure</span>
+            <span>안전 결제</span>
           </div>
         </div>
 
@@ -243,11 +243,11 @@ export function ConsumerPreview({
           focus="benefits"
           onEdit={(f) => onEdit(product.id, f)}
         >
-          <SectionBlock title="Main benefits">
+          <SectionBlock title="대표 효능">
             <ChipList
               items={product.benefits}
               variant="dark"
-              empty="예: Glass skin, Hydration"
+              empty="예: 광채 피부, 보습"
             />
           </SectionBlock>
         </ClickableSection>
@@ -257,11 +257,11 @@ export function ConsumerPreview({
           focus="ingredients"
           onEdit={(f) => onEdit(product.id, f)}
         >
-          <SectionBlock title="Key ingredients">
+          <SectionBlock title="핵심 성분">
             <ChipList
               items={product.ingredients}
               variant="outline"
-              empty="예: Niacinamide, Hyaluronic Acid"
+              empty="예: 나이아신아마이드, 히알루론산"
             />
           </SectionBlock>
         </ClickableSection>
@@ -271,11 +271,11 @@ export function ConsumerPreview({
           focus="goodFor"
           onEdit={(f) => onEdit(product.id, f)}
         >
-          <SectionBlock title="Skin match">
+          <SectionBlock title="피부 타입·고민">
             <ChipList
               items={product.goodFor}
               variant="muted"
-              empty="예: Dry Skin, Sensitive Skin, Glass skin"
+              empty="예: 건성 피부, 민감성 피부, 광채 피부"
             />
           </SectionBlock>
         </ClickableSection>
@@ -286,7 +286,7 @@ export function ConsumerPreview({
             <div className="px-5 py-4 animate-fade-in">
               <div className="flex items-center justify-between mb-2.5">
                 <div className="text-[10.5px] uppercase tracking-[0.16em] font-semibold text-sub">
-                  Reviews
+                  리뷰
                 </div>
                 <div className="flex items-center gap-1 text-[11.5px] font-semibold">
                   <Star className="w-3 h-3 fill-ink text-ink" />

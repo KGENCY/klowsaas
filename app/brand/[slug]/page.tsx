@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { MoreVertical } from "lucide-react";
 import type { ProductData } from "@/types";
-import { loadBrand, productSlug, FLAT_SHIPPING_USD } from "@/lib/brandStore";
+import { loadBrand, productSlug } from "@/lib/brandStore";
 import { ProductVisual } from "@/components/ui/ProductVisual";
 
 interface PageProps {
@@ -27,12 +27,12 @@ export default function BrandPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-bg">
-      {state.kind === "loading" && <CenterMessage>Loading…</CenterMessage>}
+      {state.kind === "loading" && <CenterMessage>불러오는 중…</CenterMessage>}
       {state.kind === "missing" && (
         <CenterMessage>
-          <div className="text-[15px] font-bold text-ink">Brand not found</div>
+          <div className="text-[15px] font-bold text-ink">브랜드를 찾을 수 없습니다</div>
           <div className="mt-1 text-[12.5px] text-sub">
-            klow.kr/{params.slug} hasn’t been published yet.
+            klow.kr/{params.slug} 링크가 아직 게시되지 않았습니다.
           </div>
         </CenterMessage>
       )}
@@ -69,10 +69,10 @@ function BrandView({
           @{handle}
         </h1>
         <p className="mt-1 text-[13px] text-sub">
-          {brand.category ? `${brand.category} · Korea` : "Korean Beauty"}
+          {brand.category ? `${brand.category} · 한국 브랜드` : "한국 뷰티 브랜드"}
         </p>
         <p className="mt-1.5 text-[11px] text-sub font-medium">
-          Flat ${FLAT_SHIPPING_USD} global shipping · Ships from Korea
+          전 세계 무료배송 포함 · 한국에서 발송
         </p>
 
         {/* Pill toggle */}
@@ -86,7 +86,7 @@ function BrandView({
                 : "text-white/80 hover:text-white"
             }`}
           >
-            Links
+            링크
           </button>
           <button
             type="button"
@@ -97,7 +97,7 @@ function BrandView({
                 : "text-white/80 hover:text-white"
             }`}
           >
-            Shop
+            상품
           </button>
         </div>
       </header>
@@ -157,12 +157,12 @@ function BrandView({
         </section>
       ) : (
         <section className="mt-10 text-center">
-          <p className="text-[13px] text-sub">No links yet.</p>
+          <p className="text-[13px] text-sub">아직 등록된 링크가 없습니다.</p>
         </section>
       )}
 
       <p className="mt-12 text-center text-[10.5px] text-sub tracking-[0.18em] uppercase">
-        Powered by KLOW
+        KLOW 제공
       </p>
     </main>
   );

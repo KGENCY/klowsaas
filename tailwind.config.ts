@@ -6,7 +6,8 @@ const config: Config = {
     extend: {
       colors: {
         bg: "#FAFAFC",
-        ink: "#0F0F14",
+        ink: "#111827",
+        klow: "#7C3AED",
         sub: "#6B7280",
         line: "#ECECF1",
       },

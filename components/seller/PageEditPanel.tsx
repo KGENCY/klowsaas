@@ -59,9 +59,9 @@ export function PageEditPanel({ open, data, onClose, onApply }: Props) {
           KLOW 기본 정책
         </div>
         <Row label="기본 환율" value={`₩${data.exchangeRate.toLocaleString()} = $1`} />
-        <Row label="글로벌 배송비" value={`$${data.shippingUSD.toFixed(2)}`} />
+        <Row label="글로벌 배송비" value={`$${data.shippingUSD.toFixed(2)} 포함`} />
         <Row
-          label="결제 처리 비용"
+          label="서비스 수수료"
           value={`${Math.round(data.paymentFeeRate * 100)}%`}
         />
         <p className="mt-2 text-[10.5px] text-sub/80">

@@ -1,21 +1,21 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ImagePlus,
   Wand2,
   Check,
-  Loader2,
   FileText,
   Sparkles,
-  Star,
   Upload,
   ArrowLeft,
   ArrowRight,
   Plus,
+  Search,
   X,
 } from "lucide-react";
-import type { Product, ProductData, ReviewSnippet } from "@/types";
+import type { Product, ProductData } from "@/types";
 import {
   calculateCustomerPriceUSD,
   formatUSD,
@@ -25,7 +25,7 @@ import { goodForOptions, mockAutofillFromFile } from "@/lib/mockData";
 import { ProductVisual } from "@/components/ui/ProductVisual";
 
 type Tab = "file" | "manual";
-type Step = "upload" | "info" | "price" | "review";
+type Step = "upload" | "info" | "price" | "creator";
 
 interface Props {
   open: boolean;
@@ -54,9 +54,7 @@ export function AddProductPanel({
   );
   const [autoFilling, setAutoFilling] = useState(false);
   const [settlementRaw, setSettlementRaw] = useState("");
-  const [reviewLoading, setReviewLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const reviewInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -67,7 +65,6 @@ export function AddProductPanel({
       setStep(s);
       setSettlementRaw("");
       setAutoFilling(false);
-      setReviewLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -110,7 +107,6 @@ export function AddProductPanel({
   };
 
   const onPickFile = () => fileInputRef.current?.click();
-  const onPickReview = () => reviewInputRef.current?.click();
   const onPickPhoto = () => photoInputRef.current?.click();
 
   const addPhoto = (file: File) => {
@@ -139,39 +135,6 @@ export function AddProductPanel({
       setAutoFilling(false);
       setStep("info");
     }, 1100);
-  };
-
-  const handleReview = (file: File) => {
-    setReviewLoading(true);
-    setTimeout(() => {
-      const snippets: ReviewSnippet[] = [
-        {
-          author: "Mina K.",
-          country: "USA",
-          rating: 5,
-          text: "Glides on so smooth and zero stickiness. Already on my second bottle!",
-        },
-        {
-          author: "Ji-young P.",
-          country: "Korea",
-          rating: 5,
-          text: "Skin texture got noticeably smoother after a week of use.",
-        },
-        {
-          author: "Hyun A.",
-          country: "Singapore",
-          rating: 4,
-          text: "Subtle scent and I wake up with brighter skin every morning.",
-        },
-      ];
-      update({
-        rating: 4.9,
-        reviewCount: 1284,
-        reviewSnippets: snippets,
-        reviewSourceName: file.name,
-      });
-      setReviewLoading(false);
-    }, 900);
   };
 
   const infoReady = product.name.trim().length > 0;
@@ -204,8 +167,8 @@ export function AddProductPanel({
         {/* Step indicator */}
         <StepDots
           steps={tab === "file"
-            ? ["upload", "info", "price", "review"]
-            : ["info", "price", "review"]}
+            ? ["upload", "info", "price", "creator"]
+            : ["info", "price", "creator"]}
           current={step}
         />
       </div>
@@ -241,14 +204,7 @@ export function AddProductPanel({
             paymentFeeRate={data.paymentFeeRate}
           />
         )}
-        {step === "review" && (
-          <ReviewStep
-            loading={reviewLoading}
-            sourceName={product.reviewSourceName}
-            count={product.reviewSnippets.length}
-            onPick={onPickReview}
-          />
-        )}
+        {step === "creator" && <CreatorStep product={product} data={data} />}
 
         {/* Hidden inputs */}
         <input
@@ -259,17 +215,6 @@ export function AddProductPanel({
           onChange={(e) => {
             const f = e.target.files?.[0];
             if (f) handleFile(f);
-            e.target.value = "";
-          }}
-        />
-        <input
-          ref={reviewInputRef}
-          type="file"
-          accept="image/png,image/jpeg"
-          className="hidden"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) handleReview(f);
             e.target.value = "";
           }}
         />
@@ -297,11 +242,11 @@ export function AddProductPanel({
         onBack={() => {
           if (step === "info") setStep(tab === "file" ? "upload" : "info");
           else if (step === "price") setStep("info");
-          else if (step === "review") setStep("price");
+          else if (step === "creator") setStep("price");
         }}
         onNext={() => {
           if (step === "info") setStep("price");
-          else if (step === "price") setStep("review");
+          else if (step === "price") setStep("creator");
         }}
         onConfirm={onConfirm}
       />
@@ -469,7 +414,7 @@ function InfoStep({
           <input
             value={product.name}
             onChange={(e) => onUpdate({ name: e.target.value })}
-            placeholder="Glow Daily Essence"
+            placeholder="글로우 데일리 에센스"
             className="w-full px-4 py-3.5 rounded-xl bg-bg border border-transparent focus:border-ink/30 focus:bg-white outline-none text-[16px] font-semibold"
           />
         </Block>
@@ -478,7 +423,7 @@ function InfoStep({
           <EditablePillRow
             items={product.benefits}
             variant="solid"
-            placeholder="효능 추가 (예: Glass skin)"
+            placeholder="효능 추가 (예: 광채 피부)"
             max={6}
             onChange={(benefits) => onUpdate({ benefits })}
           />
@@ -488,7 +433,7 @@ function InfoStep({
           <EditablePillRow
             items={product.ingredients}
             variant="outline"
-            placeholder="성분 추가 (예: Niacinamide)"
+            placeholder="성분 추가 (예: 나이아신아마이드)"
             max={8}
             onChange={(ingredients) => onUpdate({ ingredients })}
           />
@@ -498,7 +443,7 @@ function InfoStep({
           <EditablePillRow
             items={product.goodFor}
             variant="outline"
-            placeholder="추가 (예: Dry Skin)"
+            placeholder="추가 (예: 건성 피부)"
             max={6}
             onChange={(goodFor) => onUpdate({ goodFor })}
           />
@@ -714,16 +659,21 @@ function PriceStep({
   return (
     <div className="animate-fade-in">
       <h2 className="text-[22px] sm:text-[24px] font-bold leading-[1.25] tracking-tight">
-        원가 + 마진,
-        <br />정산 희망 금액을 입력해 주세요!
+        실제 정산 받으실
+        <br />금액(KRW)을 입력해 주세요!
       </h2>
       <p className="mt-2.5 text-[13px] text-sub leading-[1.55]">
-        환율 · 고정배송 · 결제수수료까지 KLOW가 알아서 계산해드려요.
+        대표님이 수령할 제품당 정산액을 입력하세요. 배송비와 수수료는 KLOW가 알아서 계산합니다.
       </p>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Badge>글로벌 배송비 ${shippingUSD.toFixed(2)} 포함</Badge>
+        <Badge>서비스 수수료 {Math.round(paymentFeeRate * 100)}%</Badge>
+      </div>
 
       <div className="mt-5 rounded-2xl border border-line bg-white px-5 py-4 focus-within:border-ink/40 transition-colors">
         <div className="text-[10.5px] font-semibold tracking-wider text-sub uppercase mb-1">
-          정산 희망 금액
+          최종 정산 금액 입력 (Net Payout in KRW)
         </div>
         <div className="flex items-baseline gap-2">
           <span className="text-[28px] font-bold text-ink">₩</span>
@@ -738,101 +688,410 @@ function PriceStep({
         </div>
       </div>
 
-      <div className="mt-3 rounded-2xl bg-ink text-white p-5">
+      <div className="mt-3 rounded-2xl bg-klow text-white p-5">
         <div className="flex items-center justify-between">
-          <span className="text-[11.5px] opacity-75">해외 고객 판매가</span>
+          <span className="text-[11.5px] opacity-80">해외 고객 판매가</span>
           <span className="text-[10px] opacity-50 tracking-wider">USD</span>
         </div>
-        <div className="mt-1 text-[34px] font-bold tracking-tight leading-none">
-          {settlementKRW > 0 ? formatUSD(customerPriceUSD) : "—"}
+        <div className="mt-2 flex flex-wrap items-end gap-2">
+          <div className="text-[34px] font-bold tracking-tight leading-none">
+            {settlementKRW > 0 ? formatUSD(customerPriceUSD) : "—"}
+          </div>
+          {settlementKRW > 0 && (
+            <span className="rounded-full bg-emerald-400 px-2.5 py-1 text-[10px] font-black tracking-wide text-emerald-950">
+              전 세계 무료배송 포함
+            </span>
+          )}
         </div>
-        <div className="mt-3 pt-3 border-t border-white/10 grid grid-cols-3 gap-1.5 text-[10.5px] opacity-75">
+        <div className="mt-3 pt-3 border-t border-white/20 grid grid-cols-3 gap-1.5 text-[10.5px] text-white/80">
           <Pill>환율 ₩{exchangeRate.toLocaleString("ko-KR")}</Pill>
-          <Pill>고정배송 ${shippingUSD}</Pill>
-          <Pill>해외결제 수수료 {Math.round(paymentFeeRate * 100)}%</Pill>
+          <Pill>배송비 ${shippingUSD} 포함</Pill>
+          <Pill>수수료 {Math.round(paymentFeeRate * 100)}%</Pill>
         </div>
       </div>
     </div>
   );
 }
 
-function ReviewStep({
-  loading,
-  sourceName,
-  count,
-  onPick,
-}: {
-  loading: boolean;
-  sourceName?: string;
-  count: number;
-  onPick: () => void;
-}) {
-  const has = !!sourceName && count > 0;
+const creatorFilters = [
+  "전체",
+  "미국",
+  "일본",
+  "태국",
+  "민감성 피부",
+  "지성 피부",
+  "클린뷰티",
+  "글래스 스킨",
+  "비건뷰티",
+] as const;
+
+const creators = [
+  {
+    name: "YEONSEUL",
+    handle: "@yeonseul.glow",
+    country: "미국 / 캐나다",
+    categoryTags: ["클린뷰티"],
+    skinTags: ["민감성 피부", "피부 장벽"],
+    score: 98,
+    accent: "bg-violet-50 text-violet-700 border-violet-100",
+  },
+  {
+    name: "Joana",
+    handle: "@joana.kbeauty",
+    country: "일본",
+    categoryTags: ["글래스 스킨"],
+    skinTags: ["지성 피부", "모공"],
+    score: 94,
+    accent: "bg-sky-50 text-sky-700 border-sky-100",
+  },
+  {
+    name: "Mina",
+    handle: "@minainseoul",
+    country: "태국 / 베트남",
+    categoryTags: ["비건뷰티"],
+    skinTags: ["건성 피부", "보습"],
+    score: 91,
+    accent: "bg-amber-50 text-amber-700 border-amber-100",
+  },
+  {
+    name: "Lina",
+    handle: "@lina.cleanlab",
+    country: "유럽",
+    categoryTags: ["클린뷰티"],
+    skinTags: ["트러블 피부", "민감성 피부"],
+    score: 89,
+    accent: "bg-emerald-50 text-emerald-700 border-emerald-100",
+  },
+];
+
+type Creator = (typeof creators)[number];
+
+function CreatorStep({ product, data }: { product: Product; data: ProductData }) {
+  const [activeFilter, setActiveFilter] = useState<(typeof creatorFilters)[number]>("전체");
+  const [query, setQuery] = useState("");
+  const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null);
+
+  const normalizedQuery = query.trim().toLowerCase();
+  const visibleCreators = creators.filter((creator) => {
+    const haystack = [
+      creator.name,
+      creator.handle,
+      creator.country,
+      ...creator.categoryTags,
+      ...creator.skinTags,
+    ]
+      .join(" ")
+      .toLowerCase();
+    const queryMatch = !normalizedQuery || haystack.includes(normalizedQuery);
+    const filterMatch =
+      activeFilter === "전체" ||
+      creator.country.includes(activeFilter) ||
+      creator.categoryTags.includes(activeFilter) ||
+      creator.skinTags.includes(activeFilter);
+    return queryMatch && filterMatch;
+  });
 
   return (
     <div className="animate-fade-in">
-      <h2 className="text-[22px] sm:text-[24px] font-bold leading-[1.25] tracking-tight">
-        리뷰 캡쳐본을 올리면,
-        <br />자동으로 번역 리뷰가 적용돼요!
-      </h2>
-      <p className="mt-2.5 text-[13px] text-sub leading-[1.55]">
-        선택사항이에요. 건너뛰고 바로 등록해도 괜찮습니다.
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <span className="inline-flex rounded-full border border-klow/15 bg-klow/5 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-klow">
+            선택사항
+          </span>
+          <h2 className="mt-3 text-[22px] sm:text-[24px] font-bold leading-[1.25] tracking-tight">
+            선택형 글로벌 노출 지원
+          </h2>
+          <p className="mt-2 text-[14px] font-semibold leading-[1.5] text-ink">
+            글로벌 노출을 원한다면,
+            <br />
+            제품과 잘 맞는 크리에이터에게 샘플을 보내보세요
+          </p>
+        </div>
+      </div>
+
+      <p className="mt-3 text-[12.5px] text-sub leading-[1.6]">
+        KLOW가 현재 활동 중인 글로벌 크리에이터 중 제품 컨셉과 잘 맞는
+        크리에이터를 추천해드려요.
+      </p>
+      <p className="mt-2 text-[11.5px] text-sub/80 leading-[1.5]">
+        선택사항입니다. 지금 건너뛰고 나중에 다시 진행해도 괜찮아요.
       </p>
 
+      <div className="mt-5 relative">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-sub" />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="국가, 피부 타입, 카테고리로 검색"
+          className="w-full h-12 rounded-2xl bg-bg border border-line pl-11 pr-4 text-[13.5px] outline-none focus:border-klow/50 focus:bg-white"
+        />
+      </div>
+
+      <div className="mt-3 flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
+        {creatorFilters.map((tag) => (
+          <button
+            key={tag}
+            type="button"
+            onClick={() => setActiveFilter(tag)}
+            className={`shrink-0 rounded-full border px-3 py-1.5 text-[11.5px] font-semibold ${
+              activeFilter === tag
+                ? "border-klow bg-klow text-white"
+                : "border-line bg-white text-ink hover:border-klow/30"
+            }`}
+          >
+            {tag}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-4 space-y-2.5">
+        {visibleCreators.map((creator) => {
+          const matched = creator.skinTags.some((tag) => product.goodFor.includes(tag));
+          return (
+            <div
+              key={creator.handle}
+              className="rounded-2xl border border-line bg-white p-3 shadow-card transition-colors hover:border-klow/25"
+            >
+              <div className="flex gap-3">
+                <div
+                  className={`flex h-[76px] w-[76px] flex-shrink-0 items-center justify-center rounded-2xl border ${creator.accent}`}
+                >
+                  <span className="text-[22px] font-black tracking-tight">
+                    {creator.name.slice(0, 2)}
+                  </span>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="truncate text-[14px] font-bold text-ink">
+                        {creator.name}
+                      </div>
+                      <div className="truncate text-[11px] font-medium text-sub">
+                        {creator.handle} · {creator.country}
+                      </div>
+                    </div>
+                    <span
+                      className={`shrink-0 rounded-full px-2 py-1 text-[10px] font-black ${
+                        matched
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-bg text-sub"
+                      }`}
+                    >
+                      적합도 {creator.score}%
+                    </span>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {[...creator.categoryTags, ...creator.skinTags].map((tag) => (
+                      <span
+                        key={tag}
+                        className="rounded-full bg-bg px-2 py-0.5 text-[10px] font-semibold text-sub"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedCreator(creator)}
+                className="mt-3 flex h-10 w-full items-center justify-center rounded-xl border border-klow/20 bg-klow/5 text-[12px] font-bold text-klow hover:bg-klow hover:text-white transition-colors"
+              >
+                크리에이터에게 제품 소개하기
+              </button>
+              <Link
+                href={`/creator/${creator.name.toLowerCase()}`}
+                className="mt-2 flex h-9 w-full items-center justify-center rounded-xl text-[11.5px] font-semibold text-sub hover:bg-bg hover:text-ink"
+              >
+                프로필 자세히 보기
+              </Link>
+            </div>
+          );
+        })}
+        {visibleCreators.length === 0 && (
+          <div className="rounded-2xl border border-line bg-white px-4 py-8 text-center">
+            <div className="text-[13px] font-semibold text-ink">
+              조건에 맞는 추천 크리에이터가 없습니다
+            </div>
+            <div className="mt-1 text-[11.5px] text-sub">
+              다른 국가나 피부 타입으로 다시 검색해보세요.
+            </div>
+          </div>
+        )}
+      </div>
+
+      {selectedCreator && (
+        <CreatorProposalSheet
+          creator={selectedCreator}
+          product={product}
+          data={data}
+          onClose={() => setSelectedCreator(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+function CreatorProposalSheet({
+  creator,
+  product,
+  data,
+  onClose,
+}: {
+  creator: Creator;
+  product: Product;
+  data: ProductData;
+  onClose: () => void;
+}) {
+  const [message, setMessage] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const coreBenefit = product.benefits[0] ?? product.goodFor[0] ?? "글로벌 K-뷰티 제품";
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/35 px-4 pb-4 animate-fade-in">
       <button
-        onClick={onPick}
-        disabled={loading}
-        className={`mt-6 w-full rounded-2xl border-2 border-dashed transition-all px-5 py-5 flex items-center gap-4 ${
-          has
-            ? "bg-bg border-ink/40"
-            : "bg-white border-line hover:border-ink/40 hover:bg-bg/60"
-        } ${loading ? "pointer-events-none" : ""}`}
-      >
-        {loading ? (
+        type="button"
+        aria-label="닫기"
+        className="absolute inset-0 cursor-default"
+        onClick={onClose}
+      />
+      <div className="relative w-full max-w-[520px] rounded-[28px] bg-white shadow-pop animate-slide-up overflow-hidden">
+        {!submitted ? (
           <>
-            <div className="w-11 h-11 rounded-full bg-ink flex items-center justify-center animate-pulse-soft flex-shrink-0">
-              <Loader2 className="w-5 h-5 text-white animate-spin" />
+            <div className="px-6 pt-6 pb-4 border-b border-line/70">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-[18px] font-bold tracking-tight text-ink">
+                    크리에이터에게 제품을 소개할까요?
+                  </h3>
+                  <p className="mt-2 text-[12.5px] leading-[1.6] text-sub">
+                    선택한 크리에이터에게 제품 정보와 브랜드 소개가 전달됩니다.
+                    크리에이터가 관심을 보일 경우, 샘플 발송 및 콘텐츠 제작
+                    여부를 직접 조율할 수 있어요.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  aria-label="닫기"
+                  className="h-9 w-9 shrink-0 rounded-full hover:bg-bg flex items-center justify-center"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
             </div>
-            <div className="flex-1 text-left">
-              <div className="text-[13.5px] font-semibold text-ink">
-                리뷰를 읽고 번역 중이에요
+
+            <div className="px-6 py-5">
+              <div className="rounded-2xl border border-line bg-bg/60 p-3">
+                <div className="flex gap-3">
+                  <div className="h-[84px] w-[84px] shrink-0 overflow-hidden rounded-2xl bg-white border border-line">
+                    {product.mainPhoto ? (
+                      <img
+                        src={product.mainPhoto}
+                        alt=""
+                        className="h-full w-full object-cover"
+                        draggable={false}
+                      />
+                    ) : (
+                      <ProductVisual
+                        size="sm"
+                        brandName={product.brand || data.brandName}
+                        imageType={product.imageType}
+                      />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[10.5px] font-bold uppercase tracking-wide text-sub">
+                      {data.brandName || product.brand}
+                    </div>
+                    <div className="mt-1 line-clamp-2 text-[14px] font-bold leading-tight text-ink">
+                      {product.name || "상품명 미입력"}
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      <span className="rounded-full bg-white border border-line px-2 py-0.5 text-[10px] font-semibold text-sub">
+                        {data.category || "스킨케어"}
+                      </span>
+                      <span className="rounded-full bg-white border border-line px-2 py-0.5 text-[10px] font-semibold text-sub">
+                        {coreBenefit}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-3 border-t border-line/70 pt-3 text-[11px] text-sub">
+                  소개 대상:{" "}
+                  <span className="font-semibold text-ink">
+                    {creator.name} ({creator.handle})
+                  </span>
+                </div>
               </div>
-              <div className="text-[11.5px] text-sub mt-0.5">
-                별점 · 한줄평을 영문으로 정리해드릴게요
+
+              <label className="mt-4 block">
+                <span className="block px-1 text-[11.5px] font-semibold text-sub mb-1.5">
+                  짧은 메시지 선택 입력
+                </span>
+                <textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="브랜드 소개 또는 제품 포인트를 간단히 적어보세요"
+                  className="min-h-[96px] w-full resize-none rounded-2xl border border-line bg-white px-4 py-3 text-[13.5px] outline-none focus:border-klow/50"
+                />
+              </label>
+              <div className="mt-2 space-y-1 text-[11px] text-sub/80">
+                <div>예: 민감성 피부를 위한 진정 크림입니다</div>
+                <div>예: 일본 시장 반응을 테스트해보고 싶어요</div>
               </div>
             </div>
-          </>
-        ) : has ? (
-          <>
-            <div className="w-11 h-11 rounded-full bg-ink flex items-center justify-center flex-shrink-0">
-              <Star className="w-5 h-5 text-white fill-white" />
-            </div>
-            <div className="flex-1 text-left min-w-0">
-              <div className="text-[13.5px] font-semibold text-ink">
-                리뷰 {count}개 자동 반영됨
-              </div>
-              <div className="text-[11.5px] text-sub mt-0.5 truncate">
-                {sourceName} · 다시 올리려면 클릭
-              </div>
+
+            <div className="flex gap-2 border-t border-line/70 px-6 py-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="h-12 px-5 rounded-2xl border border-line bg-white text-[13.5px] font-semibold text-ink hover:bg-bg"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={() => setSubmitted(true)}
+                className="h-12 flex-1 rounded-2xl bg-ink text-[14px] font-bold text-white hover:opacity-90"
+              >
+                제안 보내기
+              </button>
             </div>
           </>
         ) : (
-          <>
-            <div className="w-11 h-11 rounded-xl bg-ink/5 flex items-center justify-center flex-shrink-0">
-              <ImagePlus className="w-5 h-5 text-ink" />
+          <div className="px-6 py-8 text-center">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
+              <Check className="h-7 w-7" strokeWidth={3} />
             </div>
-            <div className="flex-1 text-left">
-              <div className="text-[13.5px] font-semibold text-ink">
-                네이버 리뷰 캡쳐본 올리기
-              </div>
-              <div className="text-[11.5px] text-sub mt-0.5">
-                PNG · JPG · 별점이 보이는 한 장이면 충분해요
-              </div>
-            </div>
-          </>
+            <h3 className="mt-5 text-[19px] font-bold tracking-tight text-ink">
+              크리에이터에게 제품이 소개되었어요
+            </h3>
+            <p className="mt-2 text-[13px] leading-[1.6] text-sub">
+              관심 여부가 확인되면 KLOW에서 연결을 도와드릴게요.
+            </p>
+            <p className="mt-3 text-[11.5px] text-sub/80">
+              지금은 상품 등록만 완료해도 괜찮습니다.
+            </p>
+            <button
+              type="button"
+              onClick={onClose}
+              className="mt-6 h-12 w-full rounded-2xl bg-ink text-[14px] font-bold text-white hover:opacity-90"
+            >
+              확인
+            </button>
+          </div>
         )}
-      </button>
+      </div>
     </div>
+  );
+}
+
+function Badge({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="rounded-full border border-klow/20 bg-klow/5 px-3 py-1.5 text-[11px] font-bold text-klow">
+      {children}
+    </span>
   );
 }
 
@@ -860,8 +1119,8 @@ function Footer({
   onConfirm: () => void;
 }) {
   const canBack =
-    (tab === "file" && (step === "info" || step === "price" || step === "review")) ||
-    (tab === "manual" && (step === "price" || step === "review"));
+    (tab === "file" && (step === "info" || step === "price" || step === "creator")) ||
+    (tab === "manual" && (step === "price" || step === "creator"));
 
   return (
     <div className="px-6 py-4 border-t border-line/60 bg-white flex-shrink-0">
@@ -890,7 +1149,7 @@ function Footer({
           </button>
         )}
 
-        {step === "upload" ? null : step === "review" ? (
+        {step === "upload" ? null : step === "creator" ? (
           <>
             <button
               onClick={onConfirm}
@@ -915,7 +1174,7 @@ function Footer({
             }
             className="flex-1 h-[52px] rounded-2xl bg-ink text-white font-semibold text-[15px] disabled:bg-line disabled:text-sub/60 disabled:cursor-not-allowed hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5"
           >
-            {step === "info" ? "다음 (가격 설정)" : "다음 (리뷰)"}
+            {step === "info" ? "다음 (가격 설정)" : "다음 (크리에이터)"}
             <ArrowRight className="w-4 h-4" />
           </button>
         )}

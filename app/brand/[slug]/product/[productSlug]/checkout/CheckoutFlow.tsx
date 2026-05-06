@@ -12,7 +12,6 @@ import {
   Truck,
 } from "lucide-react";
 import type { Product, ProductData } from "@/types";
-import { FLAT_SHIPPING_USD } from "@/lib/brandStore";
 import { flagEmoji, type Country } from "@/lib/countries";
 import { ProductVisual } from "@/components/ui/ProductVisual";
 import { CountrySelector } from "@/components/consumer/CountrySelector";
@@ -47,23 +46,39 @@ const initialForm: FormState = {
   state: "",
 };
 
-function isEmail(v: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+const koreanCountryNames =
+  typeof Intl !== "undefined" && "DisplayNames" in Intl
+    ? new Intl.DisplayNames(["ko"], { type: "region" })
+    : null;
+
+const countryNameOverrides: Record<string, string> = {
+  US: "미국",
+  GB: "영국",
+  KR: "대한민국",
+  AE: "아랍에미리트",
+};
+
+function countryLabel(country: Country) {
+  return countryNameOverrides[country.code] ?? koreanCountryNames?.of(country.code) ?? country.name;
 }
 
-function isValid(step: StepKey, f: FormState): boolean {
+function isEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+function isValid(step: StepKey, form: FormState): boolean {
   switch (step) {
     case "country":
-      return !!f.country;
+      return !!form.country;
     case "contact":
-      return isEmail(f.email) && f.fullName.trim().length >= 2;
+      return isEmail(form.email) && form.fullName.trim().length >= 2;
     case "address":
-      return f.postal.trim().length >= 3 && f.address1.trim().length >= 4;
-    case "city": {
-      if (f.city.trim().length < 2) return false;
-      if (f.country?.needsState && f.state.trim().length < 2) return false;
-      return true;
-    }
+      return form.postal.trim().length >= 3 && form.address1.trim().length >= 4;
+    case "city":
+      return (
+        form.city.trim().length >= 2 &&
+        (!form.country?.needsState || form.state.trim().length >= 2)
+      );
     case "review":
       return true;
   }
@@ -73,26 +88,23 @@ export function CheckoutFlow({ brand, product }: Props) {
   const [form, setForm] = useState<FormState>(initialForm);
   const [editingStep, setEditingStep] = useState<StepKey | null>(null);
   const [paid, setPaid] = useState(false);
+  const total = product.priceUSD;
 
-  const total = product.priceUSD + FLAT_SHIPPING_USD;
-
-  // Frontier = first step that isn't valid
   const frontier = useMemo<StepKey>(() => {
-    for (const s of STEP_KEYS) {
-      if (s === "review") return "review";
-      if (!isValid(s, form)) return s;
+    for (const step of STEP_KEYS) {
+      if (step === "review") return "review";
+      if (!isValid(step, form)) return step;
     }
     return "review";
   }, [form]);
 
-  // Debounce forward advancement so the next section doesn't appear mid-typing.
-  // Backward moves (user clears a field) apply immediately to keep state honest.
   const [committedFrontier, setCommittedFrontier] = useState<StepKey>(frontier);
+
   useEffect(() => {
-    const liveIdx = STEP_KEYS.indexOf(frontier);
-    const committedIdx = STEP_KEYS.indexOf(committedFrontier);
-    if (liveIdx === committedIdx) return;
-    if (liveIdx < committedIdx) {
+    const liveIndex = STEP_KEYS.indexOf(frontier);
+    const committedIndex = STEP_KEYS.indexOf(committedFrontier);
+    if (liveIndex === committedIndex) return;
+    if (liveIndex < committedIndex) {
       setCommittedFrontier(frontier);
       return;
     }
@@ -100,9 +112,7 @@ export function CheckoutFlow({ brand, product }: Props) {
     return () => clearTimeout(id);
   }, [frontier, committedFrontier]);
 
-  const activeStep: StepKey = editingStep ?? committedFrontier;
-
-  // Refs for scrollIntoView on step change
+  const activeStep = editingStep ?? committedFrontier;
   const sectionRefs = useRef<Record<StepKey, HTMLDivElement | null>>({
     country: null,
     contact: null,
@@ -115,15 +125,14 @@ export function CheckoutFlow({ brand, product }: Props) {
   useEffect(() => {
     if (previousActive.current === activeStep) return;
     previousActive.current = activeStep;
-    const el = sectionRefs.current[activeStep];
-    if (!el) return;
+    const element = sectionRefs.current[activeStep];
+    if (!element) return;
     setTimeout(() => {
-      const top = el.getBoundingClientRect().top + window.scrollY - 88;
+      const top = element.getBoundingClientRect().top + window.scrollY - 88;
       window.scrollTo({ top, behavior: "smooth" });
     }, 80);
   }, [activeStep]);
 
-  // Auto-collapse when an "editing" section becomes valid again
   useEffect(() => {
     if (editingStep && isValid(editingStep, form)) {
       const id = setTimeout(() => setEditingStep(null), 280);
@@ -132,43 +141,29 @@ export function CheckoutFlow({ brand, product }: Props) {
   }, [editingStep, form]);
 
   const update = (patch: Partial<FormState>) =>
-    setForm((f) => ({ ...f, ...patch }));
-
-  const handleEdit = (step: StepKey) => setEditingStep(step);
-
-  const goPay = () => {
-    setPaid(true);
-    setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }, 100);
-  };
+    setForm((current) => ({ ...current, ...patch }));
 
   if (paid) return <PaymentReady total={total} product={product} brand={brand} />;
 
-  // Which steps to render: committed frontier and any earlier ones
   const renderUntilIndex = STEP_KEYS.indexOf(committedFrontier);
 
   return (
     <div className="min-h-screen bg-bg pb-[120px]">
-      {/* Top bar */}
       <header className="relative mx-auto w-full max-w-[430px] px-5 pt-5 flex items-center justify-between">
         <Link
           href={`/brand/${brand.slug}`}
           className="inline-flex items-center justify-center w-10 h-10 -ml-2 rounded-full hover:bg-white/60 transition-colors"
-          aria-label="Back to brand"
+          aria-label="브랜드로 돌아가기"
         >
           <ArrowLeft className="w-[18px] h-[18px] text-ink" />
         </Link>
-        <div className="text-[11px] font-bold tracking-[0.28em] text-ink">
-          KLOW
-        </div>
+        <div className="text-[11px] font-bold tracking-[0.28em] text-ink">KLOW</div>
         <span className="inline-flex items-center gap-1 text-[11px] text-sub font-medium">
-          <Lock className="w-[12px] h-[12px]" /> Secure
+          <Lock className="w-[12px] h-[12px]" /> 안전 주문
         </span>
       </header>
 
       <main className="relative mx-auto w-full max-w-[430px] px-5 pt-4">
-        {/* Product mini summary */}
         <section className="rounded-2xl bg-white border border-line p-3 flex items-center gap-3">
           <div className="w-[64px] h-[64px] flex-shrink-0">
             <ProductVisual size="sm" brandName={brand.brandName} />
@@ -184,23 +179,21 @@ export function CheckoutFlow({ brand, product }: Props) {
               <span className="text-[14px] font-bold text-ink">
                 ${product.priceUSD.toFixed(2)}
               </span>
-              <span className="px-1.5 py-0.5 rounded-full bg-bg text-ink text-[9.5px] font-bold">
-                +${FLAT_SHIPPING_USD} ships
+              <span className="px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[9.5px] font-bold">
+                무료배송 포함
               </span>
             </div>
           </div>
         </section>
 
-        {/* Section stack */}
         <div className="mt-6 space-y-3.5">
-          {/* COUNTRY */}
           <SectionCard
-            innerRef={(el) => (sectionRefs.current.country = el)}
+            innerRef={(element) => (sectionRefs.current.country = element)}
             stepNum={1}
-            title="Where to?"
+            title="배송 국가"
             active={activeStep === "country"}
             complete={committedFrontier !== "country" && form.country !== null}
-            onEdit={() => handleEdit("country")}
+            onEdit={() => setEditingStep("country")}
             summary={
               form.country && (
                 <span className="inline-flex items-center gap-2">
@@ -208,36 +201,34 @@ export function CheckoutFlow({ brand, product }: Props) {
                     {flagEmoji(form.country.code)}
                   </span>
                   <span className="font-semibold text-ink">
-                    {form.country.name}
+                    {countryLabel(form.country)}
                   </span>
                 </span>
               )
             }
           >
             <CountrySelector
-              onSelect={(c) => {
-                update({ country: c, state: c.needsState ? form.state : "" });
+              onSelect={(country) => {
+                update({ country, state: country.needsState ? form.state : "" });
                 setEditingStep(null);
               }}
             />
           </SectionCard>
 
-          {/* Trust pill between country and contact */}
           {renderUntilIndex >= 1 && (
             <TrustRow icon={<Truck className="w-[12px] h-[12px]" />}>
-              Special global shipping rate · No surprise fees
+              전 세계 무료배송 포함 · 추가 비용 없음
             </TrustRow>
           )}
 
-          {/* CONTACT */}
           {renderUntilIndex >= 1 && (
             <SectionCard
-              innerRef={(el) => (sectionRefs.current.contact = el)}
+              innerRef={(element) => (sectionRefs.current.contact = element)}
               stepNum={2}
-              title="Contact"
+              title="연락처"
               active={activeStep === "contact"}
               complete={committedFrontier !== "contact" && isValid("contact", form)}
-              onEdit={() => handleEdit("contact")}
+              onEdit={() => setEditingStep("contact")}
               summary={
                 isValid("contact", form) && (
                   <span className="text-ink">
@@ -250,9 +241,9 @@ export function CheckoutFlow({ brand, product }: Props) {
             >
               <div className="space-y-2.5">
                 <Field
-                  label="Email"
+                  label="이메일"
                   value={form.email}
-                  onChange={(v) => update({ email: v })}
+                  onChange={(value) => update({ email: value })}
                   placeholder="you@email.com"
                   type="email"
                   inputMode="email"
@@ -260,25 +251,24 @@ export function CheckoutFlow({ brand, product }: Props) {
                   autoFocus
                 />
                 <Field
-                  label="Full name"
+                  label="받는 분 이름"
                   value={form.fullName}
-                  onChange={(v) => update({ fullName: v })}
-                  placeholder="Your full name"
+                  onChange={(value) => update({ fullName: value })}
+                  placeholder="받는 분 성함"
                   autoComplete="name"
                 />
               </div>
             </SectionCard>
           )}
 
-          {/* ADDRESS */}
           {renderUntilIndex >= 2 && (
             <SectionCard
-              innerRef={(el) => (sectionRefs.current.address = el)}
+              innerRef={(element) => (sectionRefs.current.address = element)}
               stepNum={3}
-              title="Address"
+              title="주소"
               active={activeStep === "address"}
               complete={committedFrontier !== "address" && isValid("address", form)}
-              onEdit={() => handleEdit("address")}
+              onEdit={() => setEditingStep("address")}
               summary={
                 isValid("address", form) && (
                   <span className="text-ink truncate block">
@@ -294,26 +284,26 @@ export function CheckoutFlow({ brand, product }: Props) {
             >
               <div className="space-y-2.5">
                 <Field
-                  label="Postal code"
+                  label="우편번호"
                   value={form.postal}
-                  onChange={(v) => update({ postal: v })}
-                  placeholder="ZIP / postal code"
+                  onChange={(value) => update({ postal: value })}
+                  placeholder="우편번호"
                   autoComplete="postal-code"
                   autoFocus
                 />
                 <Field
-                  label="Address line 1"
+                  label="주소 1"
                   value={form.address1}
-                  onChange={(v) => update({ address1: v })}
-                  placeholder="Street, building"
+                  onChange={(value) => update({ address1: value })}
+                  placeholder="도로명, 건물명"
                   autoComplete="address-line1"
                 />
                 <Field
-                  label="Address line 2"
+                  label="주소 2"
                   optional
                   value={form.address2}
-                  onChange={(v) => update({ address2: v })}
-                  placeholder="Apt, unit, floor (optional)"
+                  onChange={(value) => update({ address2: value })}
+                  placeholder="동, 호수, 층수 등 선택 입력"
                   autoComplete="address-line2"
                 />
               </div>
@@ -322,19 +312,18 @@ export function CheckoutFlow({ brand, product }: Props) {
 
           {renderUntilIndex >= 3 && (
             <TrustRow icon={<ShieldCheck className="w-[12px] h-[12px]" />}>
-              No Korean address needed · Ships from Korea
+              한국 주소 없이 주문 가능 · 한국에서 발송
             </TrustRow>
           )}
 
-          {/* CITY */}
           {renderUntilIndex >= 3 && (
             <SectionCard
-              innerRef={(el) => (sectionRefs.current.city = el)}
+              innerRef={(element) => (sectionRefs.current.city = element)}
               stepNum={4}
-              title="City"
+              title="도시"
               active={activeStep === "city"}
               complete={committedFrontier !== "city" && isValid("city", form)}
-              onEdit={() => handleEdit("city")}
+              onEdit={() => setEditingStep("city")}
               summary={
                 isValid("city", form) && (
                   <span className="text-ink">
@@ -351,19 +340,19 @@ export function CheckoutFlow({ brand, product }: Props) {
             >
               <div className="space-y-2.5">
                 <Field
-                  label="City"
+                  label="도시"
                   value={form.city}
-                  onChange={(v) => update({ city: v })}
-                  placeholder="City"
+                  onChange={(value) => update({ city: value })}
+                  placeholder="도시"
                   autoComplete="address-level2"
                   autoFocus
                 />
                 {form.country?.needsState && (
                   <Field
-                    label="State / Province"
+                    label="주 / 지역"
                     value={form.state}
-                    onChange={(v) => update({ state: v })}
-                    placeholder="State or province"
+                    onChange={(value) => update({ state: value })}
+                    placeholder="주 또는 지역"
                     autoComplete="address-level1"
                   />
                 )}
@@ -371,10 +360,9 @@ export function CheckoutFlow({ brand, product }: Props) {
             </SectionCard>
           )}
 
-          {/* REVIEW */}
           {renderUntilIndex >= 4 && (
             <ReviewCard
-              innerRef={(el) => (sectionRefs.current.review = el)}
+              innerRef={(element) => (sectionRefs.current.review = element)}
               product={product}
               total={total}
               form={form}
@@ -383,17 +371,17 @@ export function CheckoutFlow({ brand, product }: Props) {
         </div>
       </main>
 
-      {/* Sticky bottom */}
       <StickyFooter
         total={total}
         canPay={committedFrontier === "review"}
-        onPay={goPay}
+        onPay={() => {
+          setPaid(true);
+          setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 100);
+        }}
       />
     </div>
   );
 }
-
-/* ------------------------------- subcomponents ------------------------------ */
 
 function SectionCard({
   innerRef,
@@ -405,7 +393,7 @@ function SectionCard({
   summary,
   children,
 }: {
-  innerRef: (el: HTMLDivElement | null) => void;
+  innerRef: (element: HTMLDivElement | null) => void;
   stepNum: number;
   title: string;
   active: boolean;
@@ -426,7 +414,7 @@ function SectionCard({
             <Check className="w-[12px] h-[12px] text-ink" strokeWidth={3} />
           </span>
           <span className="flex-1 min-w-0 text-[13.5px] truncate">{summary}</span>
-          <span className="text-[11.5px] font-semibold text-ink">Change</span>
+          <span className="text-[11.5px] font-semibold text-ink">수정</span>
         </button>
       </div>
     );
@@ -479,7 +467,7 @@ function Field({
 }: {
   label: string;
   value: string;
-  onChange: (v: string) => void;
+  onChange: (value: string) => void;
   placeholder?: string;
   type?: string;
   inputMode?: "text" | "email" | "numeric" | "tel" | "url" | "search";
@@ -493,14 +481,14 @@ function Field({
         {label}
         {optional && (
           <span className="ml-1 text-[10px] font-medium text-sub">
-            optional
+            선택 입력
           </span>
         )}
       </span>
       <input
         type={type}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         inputMode={inputMode}
         autoComplete={autoComplete}
@@ -517,7 +505,7 @@ function ReviewCard({
   total,
   form,
 }: {
-  innerRef: (el: HTMLDivElement | null) => void;
+  innerRef: (element: HTMLDivElement | null) => void;
   product: Product;
   total: number;
   form: FormState;
@@ -528,7 +516,7 @@ function ReviewCard({
         <div className="flex items-center gap-2 mb-4">
           <Sparkles className="w-[14px] h-[14px] text-ink" />
           <h2 className="text-[15px] font-bold tracking-tight text-ink">
-            Review
+            주문 정보 확인
           </h2>
         </div>
 
@@ -538,43 +526,41 @@ function ReviewCard({
 
         <div className="space-y-2 text-[13.5px]">
           <div className="flex items-center justify-between">
-            <span className="text-sub">Product</span>
+            <span className="text-sub">상품 금액</span>
             <span className="font-semibold text-ink">
               ${product.priceUSD.toFixed(2)}
             </span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sub inline-flex items-center gap-1.5">
-              Shipping
-              <span className="px-1.5 py-0.5 rounded-full bg-bg text-ink text-[9.5px] font-bold">
-                Special rate
+              배송비
+              <span className="px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[9.5px] font-bold">
+                포함
               </span>
             </span>
-            <span className="font-semibold text-ink">
-              ${FLAT_SHIPPING_USD.toFixed(2)}
-            </span>
+            <span className="font-semibold text-ink">무료</span>
           </div>
         </div>
 
         <div className="my-4 h-px bg-line" />
 
         <div className="flex items-baseline justify-between">
-          <span className="text-[13px] font-semibold text-sub">Total</span>
+          <span className="text-[13px] font-semibold text-sub">총 결제 금액</span>
           <span className="text-[24px] font-bold text-ink tracking-tight">
             ${total.toFixed(2)}
           </span>
         </div>
 
         <div className="mt-5 rounded-xl bg-bg border border-line p-3 space-y-1.5">
-          <ReviewLine label="Ship to">
+          <ReviewLine label="배송 국가">
             {form.country && (
               <>
-                {flagEmoji(form.country.code)} {form.country.name}
+                {flagEmoji(form.country.code)} {countryLabel(form.country)}
               </>
             )}
           </ReviewLine>
-          <ReviewLine label="Email">{form.email.trim()}</ReviewLine>
-          <ReviewLine label="Address">
+          <ReviewLine label="이메일">{form.email.trim()}</ReviewLine>
+          <ReviewLine label="주소">
             {form.address1.trim()}
             {form.address2.trim() && `, ${form.address2.trim()}`}, {form.city.trim()}
             {form.state.trim() && ` ${form.state.trim()}`} {form.postal.trim()}
@@ -583,12 +569,12 @@ function ReviewCard({
 
         <div className="mt-4 flex items-center justify-center gap-3 text-[10.5px] text-sub font-medium">
           <span className="inline-flex items-center gap-1">
-            <Lock className="w-[10px] h-[10px]" /> Secure
+            <Lock className="w-[10px] h-[10px]" /> 안전 주문
           </span>
           <span className="text-line">·</span>
-          <span>No surprise fees</span>
+          <span>추가 비용 없음</span>
           <span className="text-line">·</span>
-          <span>Ships from Korea</span>
+          <span>한국에서 발송</span>
         </div>
       </div>
     </div>
@@ -630,26 +616,26 @@ function StickyFooter({
           <div className="rounded-2xl bg-white border border-line px-4 py-3 flex items-center justify-between">
             <div>
               <div className="text-[10.5px] text-sub font-semibold">
-                Flat $15 shipping included
+                전 세계 무료배송 포함
               </div>
               <div className="text-[16px] font-bold text-ink tracking-tight">
-                Total ${total.toFixed(2)}
+                총 결제 금액 ${total.toFixed(2)}
               </div>
             </div>
             <span className="text-[11px] text-sub font-medium">
-              Continue below ↓
+              아래 정보를 입력하세요
             </span>
           </div>
         ) : (
           <>
             <div className="text-center mb-2 text-[10.5px] text-sub font-medium">
-              Flat $15 shipping included
+              전 세계 무료배송 포함
             </div>
             <button
               onClick={onPay}
               className="w-full h-[58px] rounded-2xl bg-ink hover:opacity-90 text-white font-bold text-[16px] tracking-tight inline-flex items-center justify-center gap-2 transition-opacity active:scale-[0.99]"
             >
-              Continue to payment
+              결제 단계로 이동
               <span className="opacity-80">·</span>
               <span>${total.toFixed(2)}</span>
               <ArrowRight className="w-[16px] h-[16px]" strokeWidth={2.5} />
@@ -677,27 +663,28 @@ function PaymentReady({
           <Check className="w-8 h-8 text-ink" strokeWidth={3} />
         </div>
         <h1 className="text-[24px] font-bold tracking-tight text-ink">
-          Ready for payment
+          결제 준비가 완료되었습니다
         </h1>
         <p className="mt-2 text-[13.5px] text-sub leading-snug">
-          Payment integration coming soon.<br />Your details are saved for this session.
+          결제 연동은 준비 중입니다.<br />
+          입력하신 정보는 현재 세션에만 저장됩니다.
         </p>
 
         <div className="mt-8 rounded-2xl bg-white border border-line p-5 text-left">
-          <div className="text-[11px] text-sub font-semibold tracking-wide uppercase">
-            Order
+          <div className="text-[11px] text-sub font-semibold tracking-wide">
+            주문 상품
           </div>
           <div className="mt-1 text-[14px] font-semibold text-ink leading-tight">
             {product.name}
           </div>
           <div className="mt-4 flex items-baseline justify-between">
-            <span className="text-[12px] text-sub">Total charged</span>
+            <span className="text-[12px] text-sub">결제 예정 금액</span>
             <span className="text-[22px] font-bold text-ink">
               ${total.toFixed(2)}
             </span>
           </div>
           <div className="mt-1 text-right text-[10.5px] text-sub">
-            Flat $15 shipping included
+            전 세계 무료배송 포함
           </div>
         </div>
 
@@ -705,7 +692,7 @@ function PaymentReady({
           href={`/brand/${brand.slug}`}
           className="mt-8 inline-flex items-center gap-1.5 text-[13px] font-semibold text-ink"
         >
-          ← Back to {brand.brandName}
+          {brand.brandName}로 돌아가기
         </Link>
       </main>
     </div>

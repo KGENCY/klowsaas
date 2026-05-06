@@ -18,7 +18,7 @@ export function Header({
             </span>
           </div>
           <span className="font-semibold text-[17px] tracking-tight">
-            KLOW <span className="text-sub font-medium">Global</span>
+            KLOW <span className="text-sub font-medium">글로벌</span>
           </span>
         </button>
       </div>
