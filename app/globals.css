@@ -13,7 +13,7 @@
 
   body {
     font-family: Pretendard, Inter, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-    letter-spacing: -0.01em;
+    letter-spacing: 0;
   }
 
   button {

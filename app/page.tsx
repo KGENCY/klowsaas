@@ -212,7 +212,10 @@ export default function Page() {
 
   return (
     <main className="min-h-screen bg-bg">
-      <Header onLogoClick={goLink} />
+      <Header
+        onLogoClick={goLink}
+        variant={step === "editor" ? "dashboard" : "landing"}
+      />
 
       {step === "link" && (
         <LinkCreateStep initialSlug={data.slug} onSubmit={handleLinkSubmit} />
