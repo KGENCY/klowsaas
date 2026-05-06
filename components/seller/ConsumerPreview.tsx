@@ -64,7 +64,16 @@ export function ConsumerPreview({
                     : "border-transparent opacity-60 hover:opacity-100"
                 }`}
               >
-                <ProductVisual size="sm" />
+                {p.mainPhoto ? (
+                  <img
+                    src={p.mainPhoto}
+                    alt=""
+                    className="w-full h-full object-cover bg-white"
+                    draggable={false}
+                  />
+                ) : (
+                  <ProductVisual size="sm" imageType={p.imageType} />
+                )}
               </button>
             );
           })}
@@ -101,7 +110,11 @@ export function ConsumerPreview({
                       draggable={false}
                     />
                   ) : (
-                    <ProductVisual size="lg" brandName={product.brand || brandName} />
+                        <ProductVisual
+                          size="lg"
+                          brandName={product.brand || brandName}
+                          imageType={product.imageType}
+                        />
                   )}
                 </div>
                 {product.photos.slice(3).map((p, i) => (
@@ -117,7 +130,11 @@ export function ConsumerPreview({
                         draggable={false}
                       />
                     ) : (
-                      <ProductVisual size="lg" brandName={product.brand || brandName} />
+                        <ProductVisual
+                          size="lg"
+                          brandName={product.brand || brandName}
+                          imageType={product.imageType}
+                        />
                     )}
                   </div>
                 ))}
@@ -130,7 +147,11 @@ export function ConsumerPreview({
                 draggable={false}
               />
             ) : (
-              <ProductVisual size="lg" brandName={product.brand || brandName} />
+              <ProductVisual
+                size="lg"
+                brandName={product.brand || brandName}
+                imageType={product.imageType}
+              />
             )}
           </div>
         </ClickableSection>

@@ -112,7 +112,20 @@ function BrandView({
               className="group rounded-[16px] bg-white border border-line overflow-hidden hover:border-ink/30 transition-colors"
             >
               <div className="aspect-square relative">
-                <ProductVisual size="md" brandName={brand.brandName} />
+                {p.mainPhoto ? (
+                  <img
+                    src={p.mainPhoto}
+                    alt=""
+                    className="w-full h-full object-cover bg-white"
+                    draggable={false}
+                  />
+                ) : (
+                  <ProductVisual
+                    size="md"
+                    brandName={brand.brandName}
+                    imageType={p.imageType}
+                  />
+                )}
                 {p.discountRate > 0 && (
                   <span className="absolute top-2 left-2 px-1.5 py-0.5 rounded-md bg-white/95 text-[10.5px] font-bold text-ink tracking-tight border border-line">
                     {p.discountRate}%

@@ -117,7 +117,16 @@ function ProductCell({
         onClick={onOpen}
         className="block w-full aspect-square rounded-2xl overflow-hidden relative"
       >
-        <ProductVisual brandName={product.brand} />
+        {product.mainPhoto ? (
+          <img
+            src={product.mainPhoto}
+            alt=""
+            className="w-full h-full object-cover bg-white"
+            draggable={false}
+          />
+        ) : (
+          <ProductVisual brandName={product.brand} imageType={product.imageType} />
+        )}
         <span
           className="absolute bottom-2 right-2 w-7 h-7 rounded-full bg-white/90 backdrop-blur flex items-center justify-center"
           aria-hidden

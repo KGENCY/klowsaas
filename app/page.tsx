@@ -30,7 +30,11 @@ type AddEntry = "file" | "manual";
 
 export default function Page() {
   const [step, setStep] = useState<StepKey>("link");
-  const [data, setData] = useState<ProductData>(defaultProductData);
+  const [data, setData] = useState<ProductData>({
+    ...defaultProductData,
+    slug: "dr-oasis-lab",
+    link: "klow.kr/dr-oasis-lab",
+  });
   const [draftProductId, setDraftProductId] = useState<string | null>(null);
   const [addStage, setAddStage] = useState<AddStage>("idle");
   const [addEntry, setAddEntry] = useState<AddEntry>("file");
@@ -267,6 +271,7 @@ export default function Page() {
 }
 
 function deriveBrandName(slug: string): string {
+  if (slug === "dr-oasis-lab" || slug === "droasislab") return "DR. OASIS LAB";
   if (!slug) return "My brand";
   const cleaned = slug.replace(/-+/g, " ").trim();
   if (!cleaned) return "My brand";

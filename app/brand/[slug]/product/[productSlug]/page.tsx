@@ -104,7 +104,20 @@ function ProductView({
       <main className="relative mx-auto w-full max-w-[430px] px-5 pt-4">
         {/* Hero image */}
         <div className="aspect-square rounded-[28px] overflow-hidden border border-line bg-white">
-          <ProductVisual size="lg" brandName={brand.brandName} />
+          {product.mainPhoto ? (
+            <img
+              src={product.mainPhoto}
+              alt=""
+              className="w-full h-full object-cover bg-white"
+              draggable={false}
+            />
+          ) : (
+            <ProductVisual
+              size="lg"
+              brandName={brand.brandName}
+              imageType={product.imageType}
+            />
+          )}
         </div>
 
         {/* Title */}
